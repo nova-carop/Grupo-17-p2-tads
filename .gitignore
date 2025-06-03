@@ -7,6 +7,6 @@
 /dataSources/
 /dataSources.local.xml/
 /.idea/
-/credits.csv/
-/movies_metadata.csv/
-/ratings_1mm.csv/
+/credits.csv
+/movies_metadata.csv
+/ratings_1mm.csv
