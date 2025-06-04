@@ -9,6 +9,14 @@ public class Pelicula {
     private float calificacion_media;
     private Date fecha_publicacion;
 
+    public Pelicula(int id, String titulo, String idioma_original, float calificacion_media, Date fecha_publicacion) {
+        this.id = id;
+        this.titulo = titulo;
+        this.idioma_original = idioma_original;
+        this.calificacion_media = calificacion_media;
+        this.fecha_publicacion = fecha_publicacion;
+    }
+
     //FALTA LA LISTA DE TOTAL DE EVALUACIONES
 
     public int getId() {

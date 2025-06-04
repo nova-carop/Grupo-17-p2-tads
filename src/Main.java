@@ -1,8 +1,12 @@
+import entidades.Pelicula;
+
+import java.util.List;
 import java.util.Scanner;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         Scanner scanner = new Scanner(System.in);
+        List<Pelicula> peliculas = null;
         boolean salir = false;
 
         while (!salir) {
@@ -15,8 +19,15 @@ public class Main {
 
             switch (opcion) {
                 case "1":
-                    //FALTA PONER LA CARGA DE DATOS ACA
-                    System.out.println("Carga de datos exitosa, tiempo de ejecución de la carga: <tiempo_ejecucion>");
+
+                    try {
+                        peliculas = CargaDatos.cargarPeliculas();
+                        long fin = System.currentTimeMillis();
+                        System.out.println("Carga de datos exitosa, tiempo de ejecución de la carga: " );
+
+                    } catch (Exception e) {
+                        System.out.println("Error al cargar los datos: " + e.getMessage());
+                    }
                     break;
                 case "2":
                     mostrarMenuConsultas(scanner);
