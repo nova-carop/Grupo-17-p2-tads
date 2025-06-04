@@ -1,9 +1,10 @@
 import entidades.Pelicula;
+import interfaces.UMovieMgt;
 
 import java.util.List;
 import java.util.Scanner;
 
-public class Main {
+public class Main implements UMovieMgt {
     public static void main(String[] args) throws Exception {
         Scanner scanner = new Scanner(System.in);
         List<Pelicula> peliculas = null;
