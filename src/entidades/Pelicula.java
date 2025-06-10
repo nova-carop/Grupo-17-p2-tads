@@ -1,6 +1,7 @@
 package entidades;
 
 import java.util.Date;
+import java.util.LinkedList;
 
 public class Pelicula {
     private int id;
@@ -8,6 +9,9 @@ public class Pelicula {
     private String idioma_original;
     private float calificacion_media;
     private Date fecha_publicacion;
+    private int id_saga;
+    private LinkedList<Actor> actores;
+    private LinkedList<Review> review;
 
     //FALTA LA LISTA DE TOTAL DE EVALUACIONES
 

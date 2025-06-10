@@ -1,10 +1,13 @@
 package entidades;
 
+import java.util.LinkedList;
+
 public class Saga {
     private int id;
     private String titulo;
     private int cantidad_peliculas;
     private float ingreso_generado;
+    private LinkedList<Pelicula> peliculas;
 
     public int getId() {
         return id;

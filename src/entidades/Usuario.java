@@ -1,9 +1,12 @@
 package entidades;
 
+import java.util.LinkedList;
+
 public class Usuario {
     private int ci;
     private String nombre;
     private int edad;
+    private LinkedList<Review> reviews;
 
     public int getCi() {
         return ci;

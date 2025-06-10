@@ -4,6 +4,8 @@ public class Review {
     private int id;
     private int calificacion;
     private String comentario;
+    private int id_pelicula;
+    private int id_usuario;
 
     public int getId() {
         return id;

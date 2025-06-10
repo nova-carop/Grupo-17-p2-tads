@@ -1,9 +1,12 @@
 package entidades;
 
+import java.util.LinkedList;
+
 public class Director {
     private String nombre;
     private int cantidad_pelis;
     private float mediana_calificacion;
+    private LinkedList<Pelicula> peliculas;
 
     public String getNombre() {
         return nombre;
