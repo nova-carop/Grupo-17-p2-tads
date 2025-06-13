@@ -29,7 +29,6 @@ public class Main {
                     salir = true;
                     break;
                 default:
-                    tiempoInicial = System.currentTimeMillis();
                     System.out.println("Opción no válida. Intente nuevamente.");
                     break;
             }
