@@ -33,15 +33,13 @@ public class Main {
                     break;
             }
         }
-
         scanner.close();
     }
 
     private static void mostrarMenuConsultas(Scanner scanner, long tiempoInicial) {
         boolean volver = false;
-
+        contarTiempoCarga(tiempoInicial, "Tiempo de ejecución de la consulta:");
         while (!volver) {
-            contarTiempoCarga(tiempoInicial, "Tiempo de Carga");
             System.out.println("1. Top 5 de las películas que más calificaciones por idioma.");
             System.out.println("2. Top 10 de las películas que mejor calificación media tienen por parte de los usuarios.");
             System.out.println("3. Top 5 de las colecciones que más ingresos generaron.");
@@ -57,43 +55,38 @@ public class Main {
                     // LLAMADA A LA LOGICA DE LA FUNCION 1
                     tiempoInicial = System.currentTimeMillis();
                     System.out.println("<id_pelicula>, <titulo_pelicula>,<total_calificaciones>,<idioma>");
-                    contarTiempoCarga(tiempoInicial,"");
+                    contarTiempoCarga(tiempoInicial,"Tiempo de ejecución de la consulta:");
                     break;
                 case "2":
                     // LLAMADA A LA LOGICA DE LA FUNCION 2
                     tiempoInicial = System.currentTimeMillis();
                     System.out.println("<id_pelicula>, <titulo_pelicula>,<calificacion_media>");
-                    System.out.println("Tiempo de ejecución de la consulta: <tiempo_ejecucion>");
-                    contarTiempoCarga(tiempoInicial,"");
+                    contarTiempoCarga(tiempoInicial,"Tiempo de ejecución de la consulta:");
                     break;
                 case "3":
                     tiempoInicial = System.currentTimeMillis();
                     System.out.println("<id_coleccion>,<titulo_coleccion>,<cantidad_peliculas>,[id_p1,id_p2],<ingreso_generado>");
-                    System.out.println("Tiempo de ejecución de la consulta: <tiempo_ejecucion>");
-                    contarTiempoCarga(tiempoInicial,"");
+                    contarTiempoCarga(tiempoInicial,"Tiempo de ejecución de la consulta:");
                     break;
                 case "4":
                     tiempoInicial = System.currentTimeMillis();
                     System.out.println("<nombre_director>,<cantidad_peliculas>,<mediana_calificacion>");
-                    System.out.println("Tiempo de ejecución de la consulta: <tiempo_ejecucion>");
-                    contarTiempoCarga(tiempoInicial,"");
+                    contarTiempoCarga(tiempoInicial,"Tiempo de ejecución de la consulta:");
                     break;
                 case "5":
                     tiempoInicial = System.currentTimeMillis();
                     System.out.println("<mes>,<nombre_actor>,<cantidad_peliculas>,<cantidad_de_calificaciones>");
-                    System.out.println("Tiempo de ejecución de la consulta: <tiempo_ejecucion>");
-                    contarTiempoCarga(tiempoInicial,"");
+                    contarTiempoCarga(tiempoInicial,"Tiempo de ejecución de la consulta:");
                     break;
                 case "6":
                     tiempoInicial = System.currentTimeMillis();
                     System.out.println("<id_usuario>,<genero>,<cantidad_de_calificaciones_sobre_ese_genero>");
-                    System.out.println("Tiempo de ejecución de la consulta: <tiempo_ejecucion>");
-                    contarTiempoCarga(tiempoInicial,"");
+                    contarTiempoCarga(tiempoInicial,"Tiempo de ejecución de la consulta:");
                     break;
                 case "7":
                     tiempoInicial = System.currentTimeMillis();
                     volver = true;
-                    contarTiempoCarga(tiempoInicial,"");
+                    contarTiempoCarga(tiempoInicial,"Tiempo de ejecución de la consulta:");
                     break;
                 default:
                     System.out.println("Opción no válida. Intente nuevamente.");
