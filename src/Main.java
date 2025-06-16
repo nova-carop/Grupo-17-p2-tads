@@ -1,13 +1,17 @@
+import Tads.ColaPrioridad;
+import Tads.TablaHash;
 import entidades.Pelicula;
-import interfaces.UMovieMgt;
+import entidades.Review;
 
-import java.util.List;
+
 import java.util.Scanner;
 
-public class Main implements UMovieMgt {
+public class Main {
     public static void main(String[] args) throws Exception {
         Scanner scanner = new Scanner(System.in);
-        List<Pelicula> peliculas = null;
+        TablaHash<Integer, Pelicula> peliculas;
+        ColaPrioridad<Review> reviews;
+
         boolean salir = false;
 
         while (!salir) {
@@ -20,16 +24,23 @@ public class Main implements UMovieMgt {
 
             switch (opcion) {
                 case "1":
-
                     try {
-                        peliculas = CargaDatos.cargarPeliculas();
-                        long fin = System.currentTimeMillis();
-                        System.out.println("Carga de datos exitosa, tiempo de ejecución de la carga: " );
+
+                        peliculas = CargaCsv.cargarPeliculas();
+                        reviews = CargaCsv.cargarRatings();
+
+                        if (!peliculas.values().isEmpty() && !reviews.estaVacia()) {
+                            System.out.println("Carga de datos exitosa. Tiempo de ejecución de la carga: " );
+                        } else {
+                            System.out.println("Ocurrió un problema al cargar los datos.");
+                        }
 
                     } catch (Exception e) {
                         System.out.println("Error al cargar los datos: " + e.getMessage());
                     }
                     break;
+
+
                 case "2":
                     mostrarMenuConsultas(scanner);
                     break;
@@ -61,7 +72,9 @@ public class Main implements UMovieMgt {
 
             switch (opcionConsulta) {
                 case "1":
-                    // LLAMADA A LA LOGICA DE LA FUNCION 1
+                    // LLAMADA A LA LOGICA DE LA FUNCION 1 DEBE ESTAR EN OTRA CLASE
+
+                    //para no olvidar de que devuelve la funcion
                     System.out.println("<id_pelicula>, <titulo_pelicula>,<total_calificaciones>,<idioma>");
                     System.out.println("Tiempo de ejecución de la consulta: <tiempo_ejecucion>");
                     break;
