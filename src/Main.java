@@ -1,5 +1,7 @@
 import Tads.ColaPrioridad;
 import Tads.TablaHash;
+import entidades.Actor;
+import entidades.Director;
 import entidades.Pelicula;
 import entidades.Review;
 
@@ -9,9 +11,11 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) throws Exception {
         Scanner scanner = new Scanner(System.in);
-        TablaHash<Integer, Pelicula> peliculas;
-        ColaPrioridad<Review> reviews;
-
+        // Estructuras globales
+        TablaHash<Integer, Pelicula> peliculas = null;
+        ColaPrioridad<Review> reviews = null;
+        TablaHash<String, Director> directores = null;
+        TablaHash<String, Actor> actores = null;
         boolean salir = false;
 
         while (!salir) {
@@ -26,10 +30,18 @@ public class Main {
                 case "1":
                     try {
 
+                        // Carga de estructuras
                         peliculas = CargaCsv.cargarPeliculas();
                         reviews = CargaCsv.cargarRatings();
+                        directores = new TablaHash<>();
+                        actores = new TablaHash<>();
 
-                        if (!peliculas.values().isEmpty() && !reviews.estaVacia()) {
+                        // Cargar créditos
+                        CargaCsv.cargarCreditos(peliculas, directores, actores);
+
+
+                       if (!peliculas.values().isEmpty() && !reviews.estaVacia() && directores != null && !directores.values().isEmpty() && !actores.values().isEmpty() ) {
+
                             System.out.println("Carga de datos exitosa. Tiempo de ejecución de la carga: " );
                         } else {
                             System.out.println("Ocurrió un problema al cargar los datos.");

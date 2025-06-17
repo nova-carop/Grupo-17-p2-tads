@@ -1,7 +1,7 @@
 import Tads.ColaPrioridad;
-import entidades.Pelicula;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import entidades.*;
 import Tads.TablaHash;
-import entidades.Review;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -71,6 +71,8 @@ public class CargaCsv {
 
 
     public static ColaPrioridad<Review> cargarRatings() throws Exception {
+
+        //CAMBIARLO CON UN HASH
         ColaPrioridad<Review> ratings = new ColaPrioridad<>();
 
         InputStream inputStream = CargaCsv.class.getClassLoader().getResourceAsStream("ratings_1mm.csv");
@@ -125,8 +127,98 @@ public class CargaCsv {
         }
 
         reader.close();
-        System.out.println("Reviews cargadas correctamente. Líneas con error: " + errores);
         return ratings;
     }
 
+
+
+    public static void cargarCreditos(TablaHash<Integer, Pelicula> peliculas, TablaHash<String, Director> directores, TablaHash<String, Actor> actores) throws Exception {
+        InputStream inputStream = CargaCsv.class.getClassLoader().getResourceAsStream("credits.csv");
+        if (inputStream == null) {
+            throw new RuntimeException("No se encontró el archivo credits.csv");
+        }
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+        ObjectMapper mapper = new ObjectMapper();
+
+        String linea;
+        boolean primera = true;
+        int errores = 0;
+        int contador = 0;
+
+        while ((linea = reader.readLine()) != null) {
+            if (primera) {
+                primera = false;
+                continue;
+            }
+
+            contador++;
+            if (contador % 2000 == 0) {
+                System.out.println("Procesadas: " + contador);
+            }
+
+            try {
+                //no usar un split con regex
+                String[] campos = linea.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+                if (campos.length < 3) {
+                    errores++;
+                    continue;
+                }
+
+                int idPelicula = Integer.parseInt(campos[2].trim());
+                Pelicula pelicula = peliculas.get(idPelicula);
+                if (pelicula == null) {
+                    errores++;
+                    continue;
+                }
+
+                String jsonCast = campos[0].trim();
+                String jsonCrew = campos[1].trim();
+
+                // CAST
+                MiembroCast[] miembrosCast = mapper.readValue(jsonCast, MiembroCast[].class);
+                for (MiembroCast mc : miembrosCast) {
+                    if (mc.name == null || mc.name.isEmpty()) continue;
+
+                    Actor actorExistente = actores.get(mc.name);
+                    if (actorExistente == null) {
+                        actorExistente = new Actor(mc.name);
+                        actores.put(mc.name, actorExistente);
+                    }
+
+                    pelicula.getActores().insertar(actorExistente);
+                }
+
+                // CREW (buscar solo director)
+                MiembroCrew[] miembrosCrew = mapper.readValue(jsonCrew, MiembroCrew[].class);
+                for (MiembroCrew miembro : miembrosCrew) {
+                    if ("Director".equalsIgnoreCase(miembro.job)) {
+                        if (miembro.name == null || miembro.name.isEmpty()) break;
+
+                        Director director = directores.get(miembro.name);
+                        if (director == null) {
+                            // Si no existe  omitimos esta fila
+                            errores++;
+                            break;
+                        }
+
+                        director.getPeliculasDirigidas().insertar(pelicula);
+                        break; // sólo un director por película
+                    }
+                }
+
+            } catch (Exception e) {
+                errores++;
+            }
+        }
+
+        reader.close();
+
+    }
+
+
+
+    //3 TABLAS HASH PARA LA CARGA DE LOS CSV
+
 }
+
