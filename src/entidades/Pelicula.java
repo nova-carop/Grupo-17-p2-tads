@@ -9,6 +9,7 @@ public class Pelicula {
     private String idioma_original;
     private float calificacion_media;
     private Date fecha_publicacion;
+    private int ingreso_generado;
     private int id_saga;
     private LinkedList<Actor> actores;
     private LinkedList<Review> review;
@@ -53,5 +54,29 @@ public class Pelicula {
 
     public void setFecha_publicacion(Date fecha_publicacion) {
         this.fecha_publicacion = fecha_publicacion;
+    }
+
+    public int getIngreso_generado() {
+        return ingreso_generado;
+    }
+
+    public void setIngreso_generado(int ingreso_generado) {
+        this.ingreso_generado = ingreso_generado;
+    }
+
+    public int getId_saga() {
+        return id_saga;
+    }
+
+    public void setId_saga(int id_saga) {
+        this.id_saga = id_saga;
+    }
+
+    public LinkedList<Actor> getActores() {
+        return actores;
+    }
+
+    public LinkedList<Review> getReview() {
+        return review;
     }
 }
