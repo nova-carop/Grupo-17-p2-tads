@@ -56,8 +56,30 @@ public class ListaEnlazada<T> {
         void aplicar(T elemento);
     }
 
-    // Obtener primer elemento (opcional)
+
     public T obtenerPrimero() {
         return cabeza != null ? cabeza.dato : null;
     }
+
+    // En tu clase ListaEnlazada.java
+    public T obtener(int indice) {
+        if (indice < 0 || indice >= tamanio) {
+            throw new IndexOutOfBoundsException("Índice fuera de rango");
+        }
+
+        Nodo<T> actual = cabeza;
+        for (int i = 0; i < indice; i++) {
+            actual = actual.siguiente;
+        }
+        return actual.dato;
+    }
+
+
+
+
+
+
+
 }
+
+

@@ -60,6 +60,26 @@ public class Pelicula {
         return actores;
     }
 
+    public int getId_saga() {
+        return id_saga;
+    }
+
+    public void setId_saga(int id_saga) {
+        this.id_saga = id_saga;
+    }
+
+    public void setActores(ListaEnlazada<Actor> actores) {
+        this.actores = actores;
+    }
+
+    public ListaEnlazada<Review> getReview() {
+        return review;
+    }
+
+    public void setReview(ListaEnlazada<Review> review) {
+        this.review = review;
+    }
+
     public Pelicula(int id, String titulo, String idioma_original, float calificacion_media, Date fecha_publicacion) {
         this.id = id;
         this.titulo = titulo;

@@ -1,9 +1,6 @@
-import Tads.ColaPrioridad;
+import Tads.ListaEnlazada;
 import Tads.TablaHash;
-import entidades.Actor;
-import entidades.Director;
-import entidades.Pelicula;
-import entidades.Review;
+import entidades.*;
 
 
 import java.util.Scanner;
@@ -11,11 +8,9 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) throws Exception {
         Scanner scanner = new Scanner(System.in);
-        // Estructuras globales
-        TablaHash<Integer, Pelicula> peliculas = null;
-        ColaPrioridad<Review> reviews = null;
-        TablaHash<String, Director> directores = null;
-        TablaHash<String, Actor> actores = null;
+
+
+
         boolean salir = false;
 
         while (!salir) {
@@ -30,27 +25,17 @@ public class Main {
                 case "1":
                     try {
 
-                        // Carga de estructuras
-                        peliculas = CargaCsv.cargarPeliculas();
-                        reviews = CargaCsv.cargarRatings();
-                        directores = new TablaHash<>();
-                        actores = new TablaHash<>();
-
-                        // Cargar créditos
-                        CargaCsv.cargarCreditos(peliculas, directores, actores);
+                        CargaDeDatos cargador = new CargaDeDatos();
+                        cargador.cargarPeliculasDesdeCSV("resources/movies_metadata.csv");
+                        cargador.cargarRatingsDesdeCSV("resources/ratings_1mm.csv");
+                        cargador.cargarCreditosDesdeCSV("resources/credits.csv");
 
 
-                       if (!peliculas.values().isEmpty() && !reviews.estaVacia() && directores != null && !directores.values().isEmpty() && !actores.values().isEmpty() ) {
-
-                            System.out.println("Carga de datos exitosa. Tiempo de ejecución de la carga: " );
-                        } else {
-                            System.out.println("Ocurrió un problema al cargar los datos.");
-                        }
-
-                    } catch (Exception e) {
+            } catch (Exception e) {
                         System.out.println("Error al cargar los datos: " + e.getMessage());
                     }
                     break;
+
 
 
                 case "2":

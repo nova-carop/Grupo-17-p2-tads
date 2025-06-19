@@ -2,7 +2,6 @@ package entidades;
 
 import Tads.ListaEnlazada;
 
-import java.util.LinkedList;
 
 public class Director {
     private String nombre;
