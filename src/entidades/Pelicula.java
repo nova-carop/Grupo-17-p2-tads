@@ -1,5 +1,7 @@
 package entidades;
 
+import Tads.ListaEnlazada;
+
 import java.util.Date;
 
 public class Pelicula {
@@ -8,8 +10,10 @@ public class Pelicula {
     private String idioma_original;
     private float calificacion_media;
     private Date fecha_publicacion;
+    private int id_saga;
+    private ListaEnlazada<Actor> actores;
+    private ListaEnlazada<Review> review;
 
-    //FALTA LA LISTA DE TOTAL DE EVALUACIONES
 
     public int getId() {
         return id;
@@ -49,5 +53,49 @@ public class Pelicula {
 
     public void setFecha_publicacion(Date fecha_publicacion) {
         this.fecha_publicacion = fecha_publicacion;
+    }
+
+
+    public ListaEnlazada<Actor> getActores() {
+        return actores;
+    }
+
+    public int getId_saga() {
+        return id_saga;
+    }
+
+    public void setId_saga(int id_saga) {
+        this.id_saga = id_saga;
+    }
+
+    public void setActores(ListaEnlazada<Actor> actores) {
+        this.actores = actores;
+    }
+
+    public ListaEnlazada<Review> getReview() {
+        return review;
+    }
+
+    public void setReview(ListaEnlazada<Review> review) {
+        this.review = review;
+    }
+
+    public Pelicula(int id, String titulo, String idioma_original, float calificacion_media, Date fecha_publicacion) {
+        this.id = id;
+        this.titulo = titulo;
+        this.idioma_original = idioma_original;
+        this.calificacion_media = calificacion_media;
+        this.fecha_publicacion = fecha_publicacion;
+    }
+
+    public Pelicula(int id, String titulo, String idioma_original, float calificacion_media, Date fecha_publicacion, int id_saga, ListaEnlazada<Actor> actores, ListaEnlazada<Review> review) {
+        this.id = id;
+        this.titulo = titulo;
+        this.idioma_original = idioma_original;
+        this.calificacion_media = calificacion_media;
+        this.fecha_publicacion = fecha_publicacion;
+        this.id_saga = id_saga;
+        this.actores = actores;
+        this.review = review;
     }
 }

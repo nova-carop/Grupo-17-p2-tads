@@ -1,7 +1,9 @@
+
+
 import java.util.Scanner;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         Scanner scanner = new Scanner(System.in);
         boolean salir = false;
 
@@ -15,9 +17,25 @@ public class Main {
 
             switch (opcion) {
                 case "1":
-                    //FALTA PONER LA CARGA DE DATOS ACA
-                    System.out.println("Carga de datos exitosa, tiempo de ejecución de la carga: <tiempo_ejecucion>");
+                    try {
+                        long inicio = System.currentTimeMillis();
+
+                        CargaDeDatos cargador = new CargaDeDatos();
+                        cargador.cargarPeliculas("resources/movies_metadata.csv");
+                        cargador.cargarRatings("resources/ratings_1mm.csv");
+                        cargador.cargarCreditos("resources/credits.csv");
+
+                        long fin = System.currentTimeMillis();
+                        long duracion = fin - inicio;
+
+                        System.out.println("Carga de datos exitosa.");
+                        System.out.println("Tiempo de ejecución de la carga: " + duracion + " ms");
+
+                    } catch (Exception e) {
+                        System.out.println("Error al cargar los datos: " + e.getMessage());
+                    }
                     break;
+
                 case "2":
                     mostrarMenuConsultas(scanner);
                     break;
@@ -49,7 +67,9 @@ public class Main {
 
             switch (opcionConsulta) {
                 case "1":
-                    // LLAMADA A LA LOGICA DE LA FUNCION 1
+                    // LLAMADA A LA LOGICA DE LA FUNCION 1 DEBE ESTAR EN OTRA CLASE
+
+                    //para no olvidar de que devuelve la funcion
                     System.out.println("<id_pelicula>, <titulo_pelicula>,<total_calificaciones>,<idioma>");
                     System.out.println("Tiempo de ejecución de la consulta: <tiempo_ejecucion>");
                     break;
