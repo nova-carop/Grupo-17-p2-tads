@@ -6,7 +6,7 @@ public class ListaEnlazada<T> {
     private Nodo<T> cola; // puntero al último nodo
     private int tamanio = 0;
 
-    // Clase interna Nodo
+    // Los nodos de las listas enlazadas
     private static class Nodo<T> {
         T dato;
         Nodo<T> siguiente;
@@ -42,7 +42,7 @@ public class ListaEnlazada<T> {
         return tamanio;
     }
 
-    // Recorrer elementos
+    
     public void recorrer(Consumidor<T> accion) {
         Nodo<T> actual = cabeza;
         while (actual != null) {
@@ -51,7 +51,6 @@ public class ListaEnlazada<T> {
         }
     }
 
-    // Interfaz funcional simple
     public interface Consumidor<T> {
         void aplicar(T elemento);
     }
@@ -61,7 +60,7 @@ public class ListaEnlazada<T> {
         return cabeza != null ? cabeza.dato : null;
     }
 
-    // En tu clase ListaEnlazada.java
+    
     public T obtener(int indice) {
         if (indice < 0 || indice >= tamanio) {
             throw new IndexOutOfBoundsException("Índice fuera de rango");
