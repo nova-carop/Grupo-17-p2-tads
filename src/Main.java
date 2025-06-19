@@ -1,6 +1,3 @@
-import Tads.ListaEnlazada;
-import Tads.TablaHash;
-import entidades.*;
 
 
 import java.util.Scanner;
@@ -8,9 +5,6 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) throws Exception {
         Scanner scanner = new Scanner(System.in);
-
-
-
         boolean salir = false;
 
         while (!salir) {
@@ -24,19 +18,23 @@ public class Main {
             switch (opcion) {
                 case "1":
                     try {
+                        long inicio = System.currentTimeMillis();
 
                         CargaDeDatos cargador = new CargaDeDatos();
-                        cargador.cargarPeliculasDesdeCSV("resources/movies_metadata.csv");
-                        cargador.cargarRatingsDesdeCSV("resources/ratings_1mm.csv");
-                        cargador.cargarCreditosDesdeCSV("resources/credits.csv");
+                        cargador.cargarPeliculas("resources/movies_metadata.csv");
+                        cargador.cargarRatings("resources/ratings_1mm.csv");
+                        cargador.cargarCreditos("resources/credits.csv");
 
+                        long fin = System.currentTimeMillis();
+                        long duracion = fin - inicio;
 
-            } catch (Exception e) {
+                        System.out.println("Carga de datos exitosa.");
+                        System.out.println("Tiempo de ejecución de la carga: " + duracion + " ms");
+
+                    } catch (Exception e) {
                         System.out.println("Error al cargar los datos: " + e.getMessage());
                     }
                     break;
-
-
 
                 case "2":
                     mostrarMenuConsultas(scanner);

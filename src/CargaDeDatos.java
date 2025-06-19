@@ -21,8 +21,8 @@ public class CargaDeDatos {
         this.directores = new TablaHash<>();
     }
 
-    // -------------------- Carga de Películas --------------------
-    public void cargarPeliculasDesdeCSV(String filePath) {
+
+    public void cargarPeliculas(String filePath) {
         int peliculasCargadas = 0;
         int lineasInvalidas = 0;
 
@@ -62,7 +62,7 @@ public class CargaDeDatos {
             System.err.println("Error al leer el archivo de peliculas: " + e.getMessage());
         }
 
-        System.out.println("Películas cargadas: " + peliculasCargadas);
+        System.out.println("peliculas cargados correctamente: " + peliculasCargadas);
     }
 
     private boolean procesarLineaPelicula(String linea) {
@@ -120,8 +120,8 @@ public class CargaDeDatos {
         }
     }
 
-    // -------------------- Carga de Ratings --------------------
-    public void cargarRatingsDesdeCSV(String filePath) {
+
+    public void cargarRatings(String filePath) {
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
             String linea;
             boolean primeraLinea = true;
@@ -165,7 +165,7 @@ public class CargaDeDatos {
             }
 
 
-            System.out.println(" Ratings cargados correctamente: " + ratingsCargados);
+            System.out.println("Ratings cargados correctamente: " + ratingsCargados);
 
 
         } catch (IOException e) {
@@ -199,7 +199,7 @@ public class CargaDeDatos {
         }
     }
 
-    // -------------------- Métodos Auxiliares --------------------
+
     private String[] parsearLineaCSV(String linea) {
         return linea.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
     }
@@ -214,23 +214,10 @@ public class CargaDeDatos {
         return count;
     }
 
-    // -------------------- Getters --------------------
-    public TablaHash<Integer, Pelicula> getTablaPeliculas() {
-        return tablaPeliculas;
-    }
-
-    public TablaHash<Integer, Saga> getTablaSagas() {
-        return tablaSagas;
-    }
-
-    public TablaHash<Integer, ListaEnlazada<Review>> getReviewsPorPelicula() {
-        return reviewsPorPelicula;
-    }
 
 
 
-    // -------------------- Carga de Créditos --------------------
-    public void cargarCreditosDesdeCSV(String filePath) {
+    public void cargarCreditos(String filePath) {
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
             String linea;
             boolean primeraLinea = true;
@@ -248,12 +235,12 @@ public class CargaDeDatos {
                 Integer movieId = ValidadorDatos.validarEntero(campos[2]);
                 if (movieId == null) continue;
 
-                // Procesar cast (actores)
+
                 if (!ValidadorDatos.estaVacio(campos[0])) {
                     procesarActores(campos[0], movieId);
                 }
 
-                // Procesar crew (directores)
+
                 if (!ValidadorDatos.estaVacio(campos[1])) {
                     procesarDirectores(campos[1], movieId);
                 }
@@ -261,7 +248,7 @@ public class CargaDeDatos {
                 creditosCargados++;
             }
 
-           ;
+            System.out.println("creditos cargados correctamente: " + creditosCargados);
 
         } catch (IOException e) {
             System.err.println("Error al leer el archivo de créditos: " + e.getMessage());
@@ -269,7 +256,7 @@ public class CargaDeDatos {
     }
 
     private void procesarActores(String jsonCast, int movieId) {
-        // Limpiar y dividir el array de actores
+
         String actoresStr = jsonCast.replace("[{", "").replace("}]", "");
         String[] actores = actoresStr.split("\\},\\s*\\{");
 
@@ -283,7 +270,7 @@ public class CargaDeDatos {
             String[] camposActor = actorStr.split(",\\s*");
             String nombreActor = null;
 
-            // Buscar el campo 'name'
+
             for (String campo : camposActor) {
                 if (campo.startsWith("'name':")) {
                     nombreActor = campo.split(":")[1].replace("'", "").trim();
@@ -299,7 +286,7 @@ public class CargaDeDatos {
     }
 
     private void procesarDirectores(String jsonCrew, int movieId) {
-        // Limpiar y dividir el array de crew
+
         String crewData = jsonCrew.replace("[{", "").replace("}]", "");
         String[] crewMembers = crewData.split("\\},\\s*\\{");
 
@@ -308,7 +295,7 @@ public class CargaDeDatos {
             String nombreDirector = null;
             String trabajo = null;
 
-            // Buscar nombre y trabajo
+
             for (String campo : camposCrew) {
                 if (campo.startsWith("'name':")) {
                     nombreDirector = campo.split(":")[1].replace("'", "").trim();
@@ -336,7 +323,7 @@ public class CargaDeDatos {
                     }
                 }
 
-                // Actualizar mediana de calificaciones (versión con ListaEnlazada)
+
                 if (pelicula != null) {
                     final float[] suma = {0};
                     final int[] contador = {0};
@@ -354,6 +341,18 @@ public class CargaDeDatos {
         }
     }
 
+
+    public TablaHash<Integer, Pelicula> getTablaPeliculas() {
+        return tablaPeliculas;
+    }
+
+    public TablaHash<Integer, Saga> getTablaSagas() {
+        return tablaSagas;
+    }
+
+    public TablaHash<Integer, ListaEnlazada<Review>> getReviewsPorPelicula() {
+        return reviewsPorPelicula;
+    }
 
     public TablaHash<Integer, ListaEnlazada<Actor>> getActoresPorPelicula() {
         return actoresPorPelicula;
