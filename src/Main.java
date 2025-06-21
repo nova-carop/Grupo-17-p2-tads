@@ -18,26 +18,26 @@ public class Main {
             switch (opcion) {
                 case "1":
                     try {
+                        long inicio = System.currentTimeMillis();
 
                         int peliculasCargadas = cargador.cargarPeliculas("resources/movies_metadata.csv");
                         int ratingsCargados = cargador.cargarRatings("resources/ratings_1mm.csv");
                         int creditosCargados = cargador.cargarCreditos("resources/credits.csv");
 
                         long fin = System.currentTimeMillis();
-                        long inicio = 0;
                         long duracion = fin - inicio;
 
                         if (peliculasCargadas > 0 && ratingsCargados > 0 && creditosCargados > 0) {
-                            System.out.println("Carga de datos exitosa,tiempo de ejecución de la carga: " + duracion + " ms");
+                            System.out.println("Carga de datos exitosa,tiempo de carga: " + duracion + " ms");
                             cargaExitosa = true;
                         } else {
                             System.err.println("❌ Carga fallida.");
                         }
-
                     } catch (Exception e) {
-                        System.out.println("Error al cargar los datos: " + e.getMessage());
+                        System.out.println("⚠️ Error al cargar los datos: " + e.getMessage());
                     }
                     break;
+
 
                 case "2":
                     mostrarMenuConsultas(scanner);
