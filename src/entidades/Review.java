@@ -15,6 +15,10 @@ public class Review implements Comparable<Review> {
         this.calificacion = calificacion;
     }
 
+    public Review() {
+
+    }
+
     public int getId() {
         return id;
     }
