@@ -82,8 +82,6 @@ public class Main {
             switch (opcionConsulta) {
                 case "1":
                     umovie.Top_5_de_las_películas_que_más_calificaciones_por_idioma();
-
-
                     break;
                 case "2":
                     umovie.Top_10_de_las_películas_que_mejor_calificación_media_tienen_por_parte_de_los_usuarios();
