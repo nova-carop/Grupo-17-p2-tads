@@ -37,6 +37,10 @@ public class Director {
         return peliculas;
     }
 
+    public void setPeliculas(ListaEnlazada<Pelicula> peliculas) {
+        this.peliculas = peliculas;
+    }
+
     public Director(String nombre, int cantidad_pelis, float mediana_calificacion, ListaEnlazada<Pelicula> peliculas) {
         this.nombre = nombre;
         this.cantidad_pelis = cantidad_pelis;

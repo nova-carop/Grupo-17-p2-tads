@@ -1,3 +1,7 @@
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.opencsv.CSVReader;
+import com.opencsv.CSVReaderBuilder;
 import entidades.*;
 import Tads.TablaHash;
 import Tads.ListaEnlazada;
@@ -10,19 +14,19 @@ public class CargaDeDatos {
     private TablaHash<Integer, Pelicula> tablaPeliculas;
     private TablaHash<Integer, Saga> tablaSagas;
     private TablaHash<Integer, ListaEnlazada<Review>> reviewsPorPelicula;
-    private TablaHash<Integer, ListaEnlazada<Actor>> actoresPorPelicula;
+    private TablaHash<String, Actor> actores;
     private TablaHash<String, Director> directores;
 
     public CargaDeDatos() {
         this.tablaPeliculas = new TablaHash<>();
         this.tablaSagas = new TablaHash<>();
         this.reviewsPorPelicula = new TablaHash<>();
-        this.actoresPorPelicula = new TablaHash<>();
+        this.actores = new TablaHash<>();
         this.directores = new TablaHash<>();
     }
 
 
-    public void cargarPeliculas(String filePath) {
+    public int cargarPeliculas(String filePath) {
         int peliculasCargadas = 0;
         int lineasInvalidas = 0;
 
@@ -61,8 +65,7 @@ public class CargaDeDatos {
         } catch (IOException e) {
             System.err.println("Error al leer el archivo de peliculas: " + e.getMessage());
         }
-
-        System.out.println("peliculas cargados correctamente: " + peliculasCargadas);
+        return peliculasCargadas;
     }
 
     private boolean procesarLineaPelicula(String linea) {
@@ -121,7 +124,7 @@ public class CargaDeDatos {
     }
 
 
-    public void cargarRatings(String filePath) {
+    public int cargarRatings(String filePath) {
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
             String linea;
             boolean primeraLinea = true;
@@ -164,14 +167,14 @@ public class CargaDeDatos {
                 }
             }
 
-
-            System.out.println("Ratings cargados correctamente: " + ratingsCargados);
-
+            return ratingsCargados;
 
         } catch (IOException e) {
             System.err.println("Error al leer el archivo de ratings: " + e.getMessage());
 
         }
+
+        return 0;
     }
 
     private void agregarReviewAPelicula(int movieId, Review review) {
@@ -215,131 +218,115 @@ public class CargaDeDatos {
     }
 
 
+    public int cargarCreditos(String rutaCsv) {
+        int procesadas = 0, errores = 0;
+        final int MAX_ERRORES_MOSTRAR = 10;
+        int erroresMostrados = 0;
 
+        try (CSVReader reader = new CSVReaderBuilder(new FileReader(rutaCsv))
+                .withSkipLines(1)
+                .build()) {
 
-    public void cargarCreditos(String filePath) {
-        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
-            String linea;
-            boolean primeraLinea = true;
-            int creditosCargados = 0;
+            String[] linea;
+            int numeroLinea = 2;
 
-            while ((linea = br.readLine()) != null) {
-                if (primeraLinea) {
-                    primeraLinea = false;
-                    continue;
-                }
-
-                String[] campos = parsearLineaCSV(linea);
-                if (campos.length < 3) continue;
-
-                Integer movieId = ValidadorDatos.validarEntero(campos[2]);
-                if (movieId == null) continue;
-
-
-                if (!ValidadorDatos.estaVacio(campos[0])) {
-                    procesarActores(campos[0], movieId);
-                }
-
-
-                if (!ValidadorDatos.estaVacio(campos[1])) {
-                    procesarDirectores(campos[1], movieId);
-                }
-
-                creditosCargados++;
-            }
-
-            System.out.println("creditos cargados correctamente: " + creditosCargados);
-
-        } catch (IOException e) {
-            System.err.println("Error al leer el archivo de créditos: " + e.getMessage());
-        }
-    }
-
-    private void procesarActores(String jsonCast, int movieId) {
-
-        String actoresStr = jsonCast.replace("[{", "").replace("}]", "");
-        String[] actores = actoresStr.split("\\},\\s*\\{");
-
-        ListaEnlazada<Actor> actoresPelicula = actoresPorPelicula.get(movieId);
-        if (actoresPelicula == null) {
-            actoresPelicula = new ListaEnlazada<>();
-            actoresPorPelicula.put(movieId, actoresPelicula);
-        }
-
-        for (String actorStr : actores) {
-            String[] camposActor = actorStr.split(",\\s*");
-            String nombreActor = null;
-
-
-            for (String campo : camposActor) {
-                if (campo.startsWith("'name':")) {
-                    nombreActor = campo.split(":")[1].replace("'", "").trim();
-                    break;
-                }
-            }
-
-            if (nombreActor != null && !nombreActor.isEmpty()) {
-                Actor actor = new Actor(nombreActor);
-                actoresPelicula.insertar(actor);
-            }
-        }
-    }
-
-    private void procesarDirectores(String jsonCrew, int movieId) {
-
-        String crewData = jsonCrew.replace("[{", "").replace("}]", "");
-        String[] crewMembers = crewData.split("\\},\\s*\\{");
-
-        for (String crewMember : crewMembers) {
-            String[] camposCrew = crewMember.split(",\\s*");
-            String nombreDirector = null;
-            String trabajo = null;
-
-
-            for (String campo : camposCrew) {
-                if (campo.startsWith("'name':")) {
-                    nombreDirector = campo.split(":")[1].replace("'", "").trim();
-                } else if (campo.startsWith("'job':")) {
-                    trabajo = campo.split(":")[1].replace("'", "").trim();
-                }
-            }
-
-            // Solo procesar si es director
-            if (nombreDirector != null && "Director".equalsIgnoreCase(trabajo)) {
-                Director director = directores.get(nombreDirector);
-                Pelicula pelicula = tablaPeliculas.get(movieId);
-
-                if (director == null) {
-                    ListaEnlazada<Pelicula> peliculasDirigidas = new ListaEnlazada<>();
-                    if (pelicula != null) {
-                        peliculasDirigidas.insertar(pelicula);
+            while ((linea = reader.readNext()) != null) {
+                try {
+                    // Validación básica de línea
+                    if (linea.length < 3 || !ValidadorDatos.esCadenaValida(linea[2])) {
+                        throw new IllegalArgumentException("Línea incompleta");
                     }
-                    director = new Director(nombreDirector, 1, 0.0f, peliculasDirigidas);
-                    directores.put(nombreDirector, director);
-                } else {
-                    director.setCantidad_pelis(director.getCantidad_pelis() + 1);
-                    if (pelicula != null) {
+
+                    int idPelicula = Integer.parseInt(linea[2].trim());
+                    Pelicula pelicula = tablaPeliculas.get(idPelicula);
+                    if (pelicula == null) {
+                        errores++;
+                        continue;
+                    }
+
+                    // Procesar actores
+                    if (linea.length > 0 && ValidadorDatos.esCadenaValida(linea[0])) {
+                        procesarJsonActores(ValidadorDatos.limpiarYValidarJson(linea[0]), pelicula);
+                    }
+
+                    // Procesar directores
+                    if (linea.length > 1 && ValidadorDatos.esCadenaValida(linea[1])) {
+                        procesarJsonDirectores(ValidadorDatos.limpiarYValidarJson(linea[1]), pelicula);
+                    }
+
+                    procesadas++;
+
+
+                } catch (Exception e) {
+                    errores++;
+                    if (erroresMostrados < MAX_ERRORES_MOSTRAR) {
+                        System.out.println("Error línea " + numeroLinea + ": " + e.getMessage());
+                        erroresMostrados++;
+                    }
+                }
+                numeroLinea++;
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error leyendo archivo: " + e.getMessage());
+        }
+
+        return procesadas;
+    }
+
+    private void procesarJsonActores(String json, Pelicula pelicula) {
+        try {
+            JsonNode castArray = new ObjectMapper().readTree(json);
+
+            if (pelicula.getActores() == null) {
+                pelicula.setActores(new ListaEnlazada<>());
+            }
+
+            for (JsonNode actorNode : castArray) {
+                if (actorNode.has("name")) {
+                    String nombre = actorNode.get("name").asText();
+                    if (ValidadorDatos.esCadenaValida(nombre)) {
+                        Actor actor = actores.get(nombre);
+                        if (actor == null) {
+                            actor = new Actor(nombre, 0);
+                            actores.put(nombre, actor);
+                        }
+                        pelicula.getActores().insertar(actor);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Error procesando actores: " + e.getMessage());
+        }
+    }
+
+    private void procesarJsonDirectores(String json, Pelicula pelicula) {
+        try {
+            JsonNode crewArray = new ObjectMapper().readTree(json);
+
+            for (JsonNode miembro : crewArray) {
+                if (miembro.has("job") && "Director".equals(miembro.get("job").asText()) && miembro.has("name")) {
+                    String nombre = miembro.get("name").asText();
+                    if (ValidadorDatos.esCadenaValida(nombre)) {
+
+                        Director director = directores.get(nombre);
+                        if (director == null) {
+                            director = new Director(nombre, 0, 0, new ListaEnlazada<>());
+                            directores.put(nombre, director);
+                        }
+
+                        if (director.getPeliculasDirigidas() == null) {
+                            director.setPeliculas(new ListaEnlazada<>());
+                        }
                         director.getPeliculasDirigidas().insertar(pelicula);
                     }
                 }
-
-
-                if (pelicula != null) {
-                    final float[] suma = {0};
-                    final int[] contador = {0};
-
-                    director.getPeliculasDirigidas().recorrer(p -> {
-                        suma[0] += p.getCalificacion_media();
-                        contador[0]++;
-                    });
-
-                    if (contador[0] > 0) {
-                        director.setMediana_calificacion(suma[0] / contador[0]);
-                    }
-                }
             }
+        } catch (Exception e) {
+            System.out.println("Error procesando directores: " + e.getMessage());
         }
     }
+
 
 
     public TablaHash<Integer, Pelicula> getTablaPeliculas() {
@@ -352,10 +339,6 @@ public class CargaDeDatos {
 
     public TablaHash<Integer, ListaEnlazada<Review>> getReviewsPorPelicula() {
         return reviewsPorPelicula;
-    }
-
-    public TablaHash<Integer, ListaEnlazada<Actor>> getActoresPorPelicula() {
-        return actoresPorPelicula;
     }
 
     public TablaHash<String, Director> getDirectores() {
