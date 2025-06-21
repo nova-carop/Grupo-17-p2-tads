@@ -58,7 +58,15 @@ public class Main {
 
     private static void mostrarMenuConsultas(Scanner scanner) {
         boolean volver = false;
-        UMovieMgt sistema = new UMovieimpl();
+        CargaDeDatos cargaDeDatos = new CargaDeDatos();
+
+        cargaDeDatos.cargarPeliculas("resources/movies_metadata.csv");
+        cargaDeDatos.cargarRatings("resources/ratings_1mm.csv");
+        cargaDeDatos.cargarCreditos("resources/credits.csv");
+
+
+        UMovieimpl umovie = new UMovieimpl(cargaDeDatos);
+
 
         while (!volver) {
             System.out.println("1. Top 5 de las películas que más calificaciones por idioma.");
@@ -73,24 +81,24 @@ public class Main {
 
             switch (opcionConsulta) {
                 case "1":
-                    sistema.Top_5_de_las_películas_que_más_calificaciones_por_idioma();
+                    umovie.Top_5_de_las_películas_que_más_calificaciones_por_idioma();
 
 
                     break;
                 case "2":
-                    sistema.Top_10_de_las_películas_que_mejor_calificación_media_tienen_por_parte_de_los_usuarios();
+                    umovie.Top_10_de_las_películas_que_mejor_calificación_media_tienen_por_parte_de_los_usuarios();
                     break;
                 case "3":
-                    sistema.Top_5_de_las_colecciones_que_más_ingresos_generaron();
+                    umovie.Top_5_de_las_colecciones_que_más_ingresos_generaron();
                     break;
                 case "4":
-                    sistema.Top_10_de_los_directores_que_mejor_calificación_tienen();
+                    umovie.Top_10_de_los_directores_que_mejor_calificación_tienen();
                     break;
                 case "5":
-                    sistema.Actor_con_más_calificaciones_recibidas_en_cada_mes_del_año();
+                    umovie.Actor_con_más_calificaciones_recibidas_en_cada_mes_del_año();
                     break;
                 case "6":
-                    sistema.Usuarios_con_más_calificaciones_por_género();
+                    umovie.Usuarios_con_más_calificaciones_por_género();
                     break;
                 case "7":
                     volver = true;

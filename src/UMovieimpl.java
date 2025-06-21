@@ -1,13 +1,152 @@
+import entidades.Pelicula;
+import entidades.Review;
+import Tads.ListaEnlazada;
+import Tads.TablaHash;
 import interfaces.UMovieMgt;
 
+import java.util.Arrays;
+
 public class UMovieimpl implements UMovieMgt {
+    private CargaDeDatos cargaDeDatos;
+
+    public UMovieimpl(CargaDeDatos cargaDeDatos) {
+        this.cargaDeDatos = cargaDeDatos;
+    }
+
     @Override
     public void Top_5_de_las_películas_que_más_calificaciones_por_idioma() {
-        //para no olvidar de que devuelve la funcion
-        System.out.println("<id_pelicula>, <titulo_pelicula>,<total_calificaciones>,<idioma>");
-        System.out.println("Tiempo de ejecución de la consulta: <tiempo_ejecucion>");
+        long startTime = System.currentTimeMillis();
 
+        // Idiomas objetivo
+        String[] idiomasObjetivo = {"en", "fr", "it", "es", "pt"};
+
+        // Obtener todas las películas y sus reviews
+        TablaHash<Integer, Pelicula> tablaPeliculas = cargaDeDatos.getTablaPeliculas();
+        TablaHash<Integer, ListaEnlazada<Review>> reviewsPorPelicula = cargaDeDatos.getReviewsPorPelicula();
+
+        // Crear una tabla hash para agrupar películas por idioma
+        TablaHash<String, ListaEnlazada<PeliculaConteo>> peliculasPorIdioma = new TablaHash<>();
+
+        // Inicializar listas para cada idioma
+        for (String idioma : idiomasObjetivo) {
+            peliculasPorIdioma.put(idioma, new ListaEnlazada<>());
+        }
+
+        // Recorrer todas las películas
+        for (Integer id : reviewsPorPelicula.claves()) {
+            Pelicula pelicula = tablaPeliculas.get(id);
+            if (pelicula != null) {
+                String idioma = pelicula.getIdioma_original();
+                ListaEnlazada<Review> reviews = reviewsPorPelicula.get(id);
+
+                if (reviews != null && Arrays.asList(idiomasObjetivo).contains(idioma)) {
+                    int totalEvaluaciones = 0;
+                    ListaEnlazada.Nodo<Review> actual = reviews.getCabeza();
+                    while (actual != null) {
+                        totalEvaluaciones++;
+                        actual = actual.getSiguiente();
+                    }
+
+                    PeliculaConteo pc = new PeliculaConteo(pelicula, totalEvaluaciones);
+
+                    ListaEnlazada<PeliculaConteo> listaIdioma = peliculasPorIdioma.get(idioma);
+                    if (listaIdioma != null) {
+                        listaIdioma.insertar(pc);
+                    }
+                }
+            }
+        }
+
+        // Ordenar y mostrar resultados para cada idioma
+        System.out.println("<id_pelicula>, <titulo_pelicula>, <total_calificaciones>, <idioma>");
+
+        for (String idioma : idiomasObjetivo) {
+            ListaEnlazada<PeliculaConteo> peliculasIdioma = peliculasPorIdioma.get(idioma);
+            if (peliculasIdioma != null && !peliculasIdioma.estaVacia()) {
+                // Ordenar por total de evaluaciones (descendente)
+                ordenarListaPeliculas(peliculasIdioma);
+
+                // Mostrar top 5
+                final int[] contador = {0};
+                ListaEnlazada.Nodo<PeliculaConteo> actual = peliculasIdioma.getCabeza();
+                while (actual != null && contador[0] < 5) {
+                    PeliculaConteo pc = actual.getDato();
+                    System.out.printf("%d, %s, %d, %s%n",
+                            pc.pelicula.getId(),
+                            pc.pelicula.getTitulo(),
+                            pc.totalEvaluaciones,
+                            pc.pelicula.getIdioma_original());
+                    contador[0]++;
+                    actual = actual.getSiguiente();
+                }
+            }
+        }
+
+        long endTime = System.currentTimeMillis();
+        System.out.println("Tiempo de ejecución de la consulta: " + (endTime - startTime) + " ms");
     }
+
+    // Clase auxiliar para almacenar película + conteo de evaluaciones
+    private static class PeliculaConteo {
+        Pelicula pelicula;
+        int totalEvaluaciones;
+
+        public PeliculaConteo(Pelicula pelicula, int totalEvaluaciones) {
+            this.pelicula = pelicula;
+            this.totalEvaluaciones = totalEvaluaciones;
+        }
+    }
+
+
+    private void ordenarListaPeliculas(ListaEnlazada<PeliculaConteo> lista) {
+        if (lista.estaVacia() || lista.tamanio() == 1) {
+            return;
+        }
+
+        boolean intercambiado;
+        do {
+            intercambiado = false;
+            ListaEnlazada.Nodo<PeliculaConteo> anterior = null;
+            ListaEnlazada.Nodo<PeliculaConteo> actual = lista.getCabeza();
+            ListaEnlazada.Nodo<PeliculaConteo> siguiente = actual != null ? actual.getSiguiente() : null;
+
+            while (siguiente != null) {
+                PeliculaConteo pcActual = actual.getDato();
+                PeliculaConteo pcSiguiente = siguiente.getDato();
+
+                if (pcActual.totalEvaluaciones < pcSiguiente.totalEvaluaciones) {
+                    // Intercambiar nodos
+                    actual.setSiguiente(siguiente.getSiguiente());
+                    siguiente.setSiguiente(actual);
+
+                    if (anterior == null) {
+                        lista.setCabeza(siguiente);
+                    } else {
+                        anterior.setSiguiente(siguiente);
+                    }
+
+                    // Actualizar referencia para continuar
+                    ListaEnlazada.Nodo<PeliculaConteo> temp = actual;
+                    actual = siguiente;
+                    siguiente = temp;
+
+                    intercambiado = true;
+                }
+
+                // Avanzar al siguiente nodo
+                anterior = actual;
+                actual = siguiente;
+                if (siguiente != null) {
+                    siguiente = siguiente.getSiguiente();
+                }
+            }
+        } while (intercambiado);
+    }
+
+
+
+
+
 
     @Override
     public void Top_10_de_las_películas_que_mejor_calificación_media_tienen_por_parte_de_los_usuarios() {

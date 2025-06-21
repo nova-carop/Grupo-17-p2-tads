@@ -1,37 +1,52 @@
 package Tads;
 
 public class ListaEnlazada<T> {
-
     private Nodo<T> cabeza;
-    private Nodo<T> cola; // puntero al último nodo
-    private int tamanio = 0;
+    private Nodo<T> cola;
+    private int tamanio;
 
-    // Los nodos de las listas enlazadas
-    private static class Nodo<T> {
-        T dato;
-        Nodo<T> siguiente;
+    public static class Nodo<T> {
+        private T dato;
+        private Nodo<T> siguiente;
 
-        Nodo(T dato) {
+        public Nodo(T dato) {
             this.dato = dato;
+            this.siguiente = null;
+        }
+
+        public T getDato() {
+            return dato;
+        }
+
+        public Nodo<T> getSiguiente() {
+            return siguiente;
+        }
+
+        public void setSiguiente(Nodo<T> siguiente) {
+            this.siguiente = siguiente;
         }
     }
 
     public ListaEnlazada() {
         cabeza = null;
         cola = null;
+        tamanio = 0;
     }
 
-    // Inserta al final en O(1)
     public void insertar(T elemento) {
         Nodo<T> nuevo = new Nodo<>(elemento);
         if (cabeza == null) {
             cabeza = nuevo;
             cola = nuevo;
         } else {
-            cola.siguiente = nuevo;
+            cola.setSiguiente(nuevo);
             cola = nuevo;
         }
         tamanio++;
+    }
+
+    public void insertarAlFinal(T elemento) {
+        insertar(elemento);
     }
 
     public boolean estaVacia() {
@@ -42,12 +57,19 @@ public class ListaEnlazada<T> {
         return tamanio;
     }
 
-    
+    public Nodo<T> getCabeza() {
+        return cabeza;
+    }
+
+    public void setCabeza(Nodo<T> cabeza) {
+        this.cabeza = cabeza;
+    }
+
     public void recorrer(Consumidor<T> accion) {
         Nodo<T> actual = cabeza;
         while (actual != null) {
-            accion.aplicar(actual.dato);
-            actual = actual.siguiente;
+            accion.aplicar(actual.getDato());
+            actual = actual.getSiguiente();
         }
     }
 
@@ -55,30 +77,9 @@ public class ListaEnlazada<T> {
         void aplicar(T elemento);
     }
 
-
-    public T obtenerPrimero() {
-        return cabeza != null ? cabeza.dato : null;
+    public void clear() {
+        cabeza = null;
+        cola = null;
+        tamanio = 0;
     }
-
-    
-    public T obtener(int indice) {
-        if (indice < 0 || indice >= tamanio) {
-            throw new IndexOutOfBoundsException("Índice fuera de rango");
-        }
-
-        Nodo<T> actual = cabeza;
-        for (int i = 0; i < indice; i++) {
-            actual = actual.siguiente;
-        }
-        return actual.dato;
-    }
-
-
-
-
-
-
-
 }
-
-
