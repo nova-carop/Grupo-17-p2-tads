@@ -32,7 +32,7 @@ public class UMovieimpl implements UMovieMgt {
             peliculasPorIdioma.put(idioma, new ListaEnlazada<>());
         }
 
-        // Recorrer todas las películas
+        // Recorrer todas las películas con reviews
         for (Integer id : reviewsPorPelicula.claves()) {
             Pelicula pelicula = tablaPeliculas.get(id);
             if (pelicula != null) {
@@ -57,34 +57,50 @@ public class UMovieimpl implements UMovieMgt {
             }
         }
 
-        // Ordenar y mostrar resultados para cada idioma
-        System.out.println("<id_pelicula>, <titulo_pelicula>, <total_calificaciones>, <idioma>");
+
+        System.out.println("\nTop 5 de películas con más evaluaciones por idioma:");
+        System.out.println("ID     Título                                      Evaluaciones  Idioma");
+        System.out.println("-------------------------------------------------------------------------");
 
         for (String idioma : idiomasObjetivo) {
+
+
             ListaEnlazada<PeliculaConteo> peliculasIdioma = peliculasPorIdioma.get(idioma);
             if (peliculasIdioma != null && !peliculasIdioma.estaVacia()) {
                 // Ordenar por total de evaluaciones (descendente)
                 ordenarListaPeliculas(peliculasIdioma);
 
                 // Mostrar top 5
-                final int[] contador = {0};
+                int contador = 0;
                 ListaEnlazada.Nodo<PeliculaConteo> actual = peliculasIdioma.getCabeza();
-                while (actual != null && contador[0] < 5) {
+                while (actual != null && contador < 5) {
                     PeliculaConteo pc = actual.getDato();
-                    System.out.printf("%d, %s, %d, %s%n",
+                    String titulo = pc.pelicula.getTitulo();
+
+                    // Ajustar el título si es muy largo
+                    if (titulo.length() > 40) {
+                        titulo = titulo.substring(0, 37) + "...";
+                    }
+
+                    // Formatear la salida
+                    System.out.printf("%-6d %-40s %,14d %7s%n",
                             pc.pelicula.getId(),
-                            pc.pelicula.getTitulo(),
+                            titulo,
                             pc.totalEvaluaciones,
                             pc.pelicula.getIdioma_original());
-                    contador[0]++;
+
+                    contador++;
                     actual = actual.getSiguiente();
                 }
             }
         }
 
         long endTime = System.currentTimeMillis();
-        System.out.println("Tiempo de ejecución de la consulta: " + (endTime - startTime) + " ms");
+        System.out.println("\n-------------------------------------------------------------------------");
+        System.out.println("Tiempo de ejecución: " + (endTime - startTime) + " ms");
     }
+
+
 
     // Clase auxiliar para almacenar película + conteo de evaluaciones
     private static class PeliculaConteo {
@@ -142,6 +158,9 @@ public class UMovieimpl implements UMovieMgt {
             }
         } while (intercambiado);
     }
+
+
+
 
 
 
