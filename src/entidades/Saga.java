@@ -4,7 +4,7 @@ public class Saga {
     private int id;
     private String titulo;
     private int cantidad_peliculas;
-    private float ingreso_generado;
+    private int ingreso_generado;
 
     public int getId() {
         return id;
@@ -30,11 +30,11 @@ public class Saga {
         this.cantidad_peliculas = cantidad_peliculas;
     }
 
-    public float getIngreso_generado() {
+    public int getIngreso_generado() {
         return ingreso_generado;
     }
 
-    public void setIngreso_generado(float ingreso_generado) {
+    public void setIngreso_generado(int ingreso_generado) {
         this.ingreso_generado = ingreso_generado;
     }
 }

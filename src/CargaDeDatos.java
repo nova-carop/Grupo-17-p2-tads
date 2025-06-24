@@ -71,7 +71,7 @@ public class CargaDeDatos {
     private boolean procesarLineaPelicula(String linea) {
         String[] campos = parsearLineaCSV(linea);
 
-        if (campos == null || campos.length < 13) {
+        if (campos == null || campos.length < 15) {
             return false;
         }
 
@@ -83,18 +83,22 @@ public class CargaDeDatos {
         String titulo = ValidadorDatos.estaVacio(campos[8]) ? "Desconocido" : campos[8].replace("\"", "").trim();
         String idioma = ValidadorDatos.estaVacio(campos[7]) ? "en" : campos[7].replace("\"", "").trim();
         Date fecha = ValidadorDatos.validarFecha(campos[12].replace("\"", ""));
+        Integer revenue = ValidadorDatos.validarEntero(campos[14]);
+        if (revenue == null) {
+            revenue = 0;  // Valor por defecto si el campo no es válido
+        }
 
         Pelicula pelicula = new Pelicula(id, titulo, idioma, 0.0f, fecha);
         tablaPeliculas.put(id, pelicula);
 
         if (!ValidadorDatos.estaVacio(campos[1]) && !campos[1].equals("null")) {
-            procesarSaga(campos[1], id);
+            procesarSaga(campos[1], id, revenue);  // Pasamos el revenue a procesarSaga
         }
 
         return true;
     }
 
-    private void procesarSaga(String datosSaga, int idPelicula) {
+    private void procesarSaga(String datosSaga, int idPelicula, int revenuePelicula) {
         String[] partes = datosSaga.split("'id':");
         if (partes.length < 2) return;
 
@@ -112,9 +116,11 @@ public class CargaDeDatos {
             saga.setId(idSaga);
             saga.setTitulo(nombreSaga);
             saga.setCantidad_peliculas(1);
+            saga.setIngreso_generado(revenuePelicula);
             tablaSagas.put(idSaga, saga);
         } else {
             saga.setCantidad_peliculas(saga.getCantidad_peliculas() + 1);
+            saga.setIngreso_generado(saga.getIngreso_generado() + revenuePelicula);
         }
 
         Pelicula pelicula = tablaPeliculas.get(idPelicula);
