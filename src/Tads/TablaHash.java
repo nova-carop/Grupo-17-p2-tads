@@ -1,10 +1,13 @@
 package Tads;
 
+import interfaces.MyHash;
+import interfaces.MyList;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-public class TablaHash<K, V> {
+public class TablaHash<K, V> implements MyHash<K, V> {
     private static final double LOAD_FACTOR_THRESHOLD = 0.75;
 
     private List<Nodo<K, V>>[] tabla;
@@ -103,11 +106,6 @@ public class TablaHash<K, V> {
         }
         return lista;
     }
-
-
-
-
-
 
 
 
