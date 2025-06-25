@@ -84,19 +84,21 @@ public class CargaDeDatos {
         String idioma = ValidadorDatos.estaVacio(campos[7]) ? "en" : campos[7].replace("\"", "").trim();
         Date fecha = ValidadorDatos.validarFecha(campos[12].replace("\"", ""));
         Integer revenue = ValidadorDatos.validarEntero(campos[14]);
-        if (revenue == null) {
-            revenue = 0;  // Valor por defecto si el campo no es válido
-        }
+        if (revenue == null) revenue = 0;
 
+        // Crear película con ingresos
         Pelicula pelicula = new Pelicula(id, titulo, idioma, 0.0f, fecha);
+        pelicula.setIngreso(revenue);  // ⬅️ ahora se guarda el ingreso
         tablaPeliculas.put(id, pelicula);
 
+        // Si tiene saga, la procesamos y le sumamos el ingreso a la saga
         if (!ValidadorDatos.estaVacio(campos[1]) && !campos[1].equals("null")) {
-            procesarSaga(campos[1], id, revenue);  // Pasamos el revenue a procesarSaga
+            procesarSaga(campos[1], id, revenue);
         }
 
         return true;
     }
+
 
     private void procesarSaga(String datosSaga, int idPelicula, int revenuePelicula) {
         String[] partes = datosSaga.split("'id':");

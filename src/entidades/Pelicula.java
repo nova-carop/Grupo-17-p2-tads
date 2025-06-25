@@ -13,7 +13,7 @@ public class Pelicula {
     private int id_saga;
     private ListaEnlazada<Actor> actores;
     private ListaEnlazada<Review> review;
-
+    private int ingreso;
 
     public int getId() {
         return id;
@@ -55,6 +55,13 @@ public class Pelicula {
         this.fecha_publicacion = fecha_publicacion;
     }
 
+    public int getIngreso() {
+        return ingreso;
+    }
+
+    public void setIngreso(int ingreso) {
+        this.ingreso = ingreso;
+    }
 
     public ListaEnlazada<Actor> getActores() {
         return actores;

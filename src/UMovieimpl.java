@@ -1,7 +1,9 @@
+import Tads.MyHeapImpl;
 import entidades.Pelicula;
 import entidades.Review;
 import Tads.ListaEnlazada;
 import Tads.TablaHash;
+import entidades.Saga;
 import interfaces.UMovieMgt;
 
 import java.util.Arrays;
@@ -138,22 +140,92 @@ public class UMovieimpl implements UMovieMgt {
     }
 
 
-
     @Override
     public void Top_10_de_las_películas_que_mejor_calificación_media_tienen_por_parte_de_los_usuarios() {
-
+        return;
     }
 
     @Override
     public void Top_5_de_las_colecciones_que_más_ingresos_generaron() {
+        long inicio = System.currentTimeMillis();
 
+        TablaHash<Integer, Pelicula> tablaPeliculas = cargaDeDatos.getTablaPeliculas();
+        TablaHash<Integer, Saga> tablaSagas = cargaDeDatos.getTablaSagas();
 
+        MyHeapImpl<Saga> top5 = new MyHeapImpl<>();
 
+        // Paso 1: Procesar sagas reales
+        ListaEnlazada<Saga> sagas = tablaSagas.values();  // Usa tu TAD
+        for (int i = 0; i < sagas.tamanio(); i++) {
+            Saga saga = sagas.obtener(i);
+            if (top5.tamaño() < 5) {
+                top5.insertar(saga);
+            } else if (saga.compareTo(top5.verTope()) > 0) {
+                top5.eliminar();
+                top5.insertar(saga);
+            }
+        }
 
+        // Paso 2: Procesar películas individuales como sagas virtuales
+        ListaEnlazada<Pelicula> peliculas = tablaPeliculas.values();  // Usa tu TAD
+        for (int i = 0; i < peliculas.tamanio(); i++) {
+            Pelicula peli = peliculas.obtener(i);
+
+            if (peli.getId_saga() == -1) {
+                int ingreso = (int) peli.getIngreso();
+                Saga virtual = new Saga(peli.getId(), peli.getTitulo(), 1, ingreso);
+
+                if (top5.tamaño() < 5) {
+                    top5.insertar(virtual);
+                } else if (virtual.compareTo(top5.verTope()) > 0) {
+                    top5.eliminar();
+                    top5.insertar(virtual);
+                }
+            }
+        }
+
+        // Paso 3: Extraer Top 5 en orden descendente
+        ListaEnlazada<Saga> topOrdenado = new ListaEnlazada<>();
+        while (!top5.estaVacio()) {
+            topOrdenado.insertar(top5.eliminar()); // inserta al final
+        }
+
+        // Paso 4: Imprimir encabezado
         System.out.println("<id_coleccion>,<titulo_coleccion>,<cantidad_peliculas>,[id_p1,id_p2],<ingreso_generado>");
-        System.out.println("Tiempo de ejecución de la consulta: <tiempo_ejecucion>");
 
+        // Paso 5: Imprimir cada colección
+        for (int i = 0; i < topOrdenado.tamanio(); i++) {
+            Saga coleccion = topOrdenado.obtener(i);
+            System.out.print(coleccion.getId() + "," + coleccion.getTitulo() + "," + coleccion.getCantidad_peliculas() + ",[");
+
+            // Buscar las películas que pertenecen a esta colección
+            boolean primero = true;
+            for (int j = 0; j < peliculas.tamanio(); j++) {
+                Pelicula p = peliculas.obtener(j);
+
+                // Película individual tratada como saga
+                if (p.getId_saga() == -1 && p.getId() == coleccion.getId()) {
+                    System.out.print(p.getId());
+                    break;
+                }
+
+                // Película que pertenece a saga real
+                if (p.getId_saga() == coleccion.getId()) {
+                    if (!primero) System.out.print(",");
+                    System.out.print(p.getId());
+                    primero = false;
+                }
+            }
+
+            System.out.println("]," + coleccion.getIngreso_generado());
+        }
+
+        long fin = System.currentTimeMillis();
+        System.out.println("Tiempo de ejecución de la consulta: " + (fin - inicio) + " ms");
     }
+
+
+
 
     @Override
     public void Top_10_de_los_directores_que_mejor_calificación_tienen() {
