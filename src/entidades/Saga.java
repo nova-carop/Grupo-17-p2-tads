@@ -1,6 +1,5 @@
 package entidades;
 
-import Tads.ListaEnlazada;
 
 public class Saga implements Comparable<Saga> {
     private int id;
@@ -17,7 +16,6 @@ public class Saga implements Comparable<Saga> {
 
     public Saga() {
     }
-
 
 
     public int getId() {

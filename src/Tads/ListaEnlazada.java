@@ -1,6 +1,9 @@
 package Tads;
 
-public class ListaEnlazada<T> {
+
+import interfaces.MyList;
+
+public class ListaEnlazada<T> implements MyList<T> {
     private Nodo<T> cabeza;
     private Nodo<T> cola;
     private int tamanio;
@@ -106,8 +109,6 @@ public class ListaEnlazada<T> {
         }
         return false;
     }
-
-
 
 
 

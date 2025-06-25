@@ -34,10 +34,10 @@ public class Main {
                             System.out.println("Carga de datos exitosa,tiempo de carga: " + duracion + " ms");
                             cargaExitosa = true;
                         } else {
-                            System.err.println("❌ Carga fallida.");
+                            System.err.println(" Carga fallida.");
                         }
                     } catch (Exception e) {
-                        System.out.println("⚠️ Error al cargar los datos: " + e.getMessage());
+                        System.out.println(" Error al cargar los datos: " + e.getMessage());
                     }
                     break;
 
