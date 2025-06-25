@@ -4,7 +4,7 @@ package entidades;
 
 public class Review implements Comparable<Review> {
     private int id;
-    private float calificacion;  // Cambiado a float
+    private float calificacion;
     private int id_pelicula;
     private int id_usuario;
 

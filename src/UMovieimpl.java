@@ -1,7 +1,9 @@
+import Tads.MyHeapImpl;
 import entidades.Pelicula;
 import entidades.Review;
 import Tads.ListaEnlazada;
 import Tads.TablaHash;
+import entidades.Saga;
 import interfaces.UMovieMgt;
 
 import java.util.Arrays;
@@ -14,84 +16,60 @@ public class UMovieimpl implements UMovieMgt {
     }
 
     @Override
+
     public void Top_5_de_las_películas_que_más_calificaciones_por_idioma() {
         long startTime = System.currentTimeMillis();
 
         // Idiomas objetivo
         String[] idiomasObjetivo = {"en", "fr", "it", "es", "pt"};
 
-        // Obtener todas las películas y sus reviews
+
         TablaHash<Integer, Pelicula> tablaPeliculas = cargaDeDatos.getTablaPeliculas();
         TablaHash<Integer, ListaEnlazada<Review>> reviewsPorPelicula = cargaDeDatos.getReviewsPorPelicula();
-
-        // Crear una tabla hash para agrupar películas por idioma
-        TablaHash<String, ListaEnlazada<PeliculaConteo>> peliculasPorIdioma = new TablaHash<>();
-
-        // Inicializar listas para cada idioma
-        for (String idioma : idiomasObjetivo) {
-            peliculasPorIdioma.put(idioma, new ListaEnlazada<>());
-        }
-
-        // Recorrer todas las películas con reviews
-        for (Integer id : reviewsPorPelicula.claves()) {
-            Pelicula pelicula = tablaPeliculas.get(id);
-            if (pelicula != null) {
-                String idioma = pelicula.getIdioma_original();
-                ListaEnlazada<Review> reviews = reviewsPorPelicula.get(id);
-
-                if (reviews != null && Arrays.asList(idiomasObjetivo).contains(idioma)) {
-                    int totalEvaluaciones = 0;
-                    ListaEnlazada.Nodo<Review> actual = reviews.getCabeza();
-                    while (actual != null) {
-                        totalEvaluaciones++;
-                        actual = actual.getSiguiente();
-                    }
-
-                    PeliculaConteo pc = new PeliculaConteo(pelicula, totalEvaluaciones);
-
-                    ListaEnlazada<PeliculaConteo> listaIdioma = peliculasPorIdioma.get(idioma);
-                    if (listaIdioma != null) {
-                        listaIdioma.insertar(pc);
-                    }
-                }
-            }
-        }
-
 
         System.out.println("\nTop 5 de películas con más evaluaciones por idioma:");
         System.out.println("ID     Título                                      Evaluaciones  Idioma");
         System.out.println("-------------------------------------------------------------------------");
 
+        // Procesar cada idioma
         for (String idioma : idiomasObjetivo) {
+            System.out.println("\nIdioma: " + idioma);
 
+            // Crear una lista temporal para las películas de este idioma
+            ListaEnlazada<Pelicula> peliculasIdioma = new ListaEnlazada<>();
 
-            ListaEnlazada<PeliculaConteo> peliculasIdioma = peliculasPorIdioma.get(idioma);
-            if (peliculasIdioma != null && !peliculasIdioma.estaVacia()) {
-                // Ordenar por total de evaluaciones (descendente)
-                ordenarListaPeliculas(peliculasIdioma);
-
-                // Mostrar top 5
-                int contador = 0;
-                ListaEnlazada.Nodo<PeliculaConteo> actual = peliculasIdioma.getCabeza();
-                while (actual != null && contador < 5) {
-                    PeliculaConteo pc = actual.getDato();
-                    String titulo = pc.pelicula.getTitulo();
-
-                    // Ajustar el título si es muy largo
-                    if (titulo.length() > 40) {
-                        titulo = titulo.substring(0, 37) + "...";
-                    }
-
-                    // Formatear la salida
-                    System.out.printf("%-6d %-40s %,14d %7s%n",
-                            pc.pelicula.getId(),
-                            titulo,
-                            pc.totalEvaluaciones,
-                            pc.pelicula.getIdioma_original());
-
-                    contador++;
-                    actual = actual.getSiguiente();
+            // recolectar todas las películas del idioma actual que tienen reviews
+            for (Integer idPelicula : reviewsPorPelicula.claves()) {
+                Pelicula pelicula = tablaPeliculas.get(idPelicula);
+                if (pelicula != null && idioma.equals(pelicula.getIdioma_original())) {
+                    peliculasIdioma.insertar(pelicula);
                 }
+            }
+
+            // ordenar las películas por cantidad de reviews (descendente)
+            ordenarPeliculasPorReviews(peliculasIdioma, reviewsPorPelicula);
+
+            //  mostrar las top 5
+            int contador = 0;
+            ListaEnlazada.Nodo<Pelicula> actual = peliculasIdioma.getCabeza();
+            while (actual != null && contador < 5) {
+                Pelicula pelicula = actual.getDato();
+                ListaEnlazada<Review> reviews = reviewsPorPelicula.get(pelicula.getId());
+                int totalEvaluaciones = contarReviews(reviews);
+
+                String titulo = pelicula.getTitulo();
+                if (titulo.length() > 40) {
+                    titulo = titulo.substring(0, 37) + "...";
+                }
+
+                System.out.printf("%-6d %-40s %,14d %7s%n",
+                        pelicula.getId(),
+                        titulo,
+                        totalEvaluaciones,
+                        pelicula.getIdioma_original());
+
+                contador++;
+                actual = actual.getSiguiente();
             }
         }
 
@@ -100,49 +78,51 @@ public class UMovieimpl implements UMovieMgt {
         System.out.println("Tiempo de ejecución: " + (endTime - startTime) + " ms");
     }
 
+    // Método auxiliar para contar reviews de una película
+    private int contarReviews(ListaEnlazada<Review> reviews) {
+        if (reviews == null) return 0;
 
-
-    // Clase auxiliar para almacenar película + conteo de evaluaciones
-    private static class PeliculaConteo {
-        Pelicula pelicula;
-        int totalEvaluaciones;
-
-        public PeliculaConteo(Pelicula pelicula, int totalEvaluaciones) {
-            this.pelicula = pelicula;
-            this.totalEvaluaciones = totalEvaluaciones;
+        int contador = 0;
+        ListaEnlazada.Nodo<Review> actual = reviews.getCabeza();
+        while (actual != null) {
+            contador++;
+            actual = actual.getSiguiente();
         }
+        return contador;
     }
 
-
-    private void ordenarListaPeliculas(ListaEnlazada<PeliculaConteo> lista) {
-        if (lista.estaVacia() || lista.tamanio() == 1) {
+    // Método para ordenar películas por cantidad de reviews (descendente)
+    private void ordenarPeliculasPorReviews(ListaEnlazada<Pelicula> peliculas,
+                                            TablaHash<Integer, ListaEnlazada<Review>> reviewsPorPelicula) {
+        if (peliculas.estaVacia() || peliculas.tamanio() == 1) {
             return;
         }
 
         boolean intercambiado;
         do {
             intercambiado = false;
-            ListaEnlazada.Nodo<PeliculaConteo> anterior = null;
-            ListaEnlazada.Nodo<PeliculaConteo> actual = lista.getCabeza();
-            ListaEnlazada.Nodo<PeliculaConteo> siguiente = actual != null ? actual.getSiguiente() : null;
+            ListaEnlazada.Nodo<Pelicula> anterior = null;
+            ListaEnlazada.Nodo<Pelicula> actual = peliculas.getCabeza();
+            ListaEnlazada.Nodo<Pelicula> siguiente = actual != null ? actual.getSiguiente() : null;
 
             while (siguiente != null) {
-                PeliculaConteo pcActual = actual.getDato();
-                PeliculaConteo pcSiguiente = siguiente.getDato();
+                // Obtener cantidad de reviews para cada película
+                int reviewsActual = contarReviews(reviewsPorPelicula.get(actual.getDato().getId()));
+                int reviewsSiguiente = contarReviews(reviewsPorPelicula.get(siguiente.getDato().getId()));
 
-                if (pcActual.totalEvaluaciones < pcSiguiente.totalEvaluaciones) {
+                if (reviewsActual < reviewsSiguiente) {
                     // Intercambiar nodos
                     actual.setSiguiente(siguiente.getSiguiente());
                     siguiente.setSiguiente(actual);
 
                     if (anterior == null) {
-                        lista.setCabeza(siguiente);
+                        peliculas.setCabeza(siguiente);
                     } else {
                         anterior.setSiguiente(siguiente);
                     }
 
                     // Actualizar referencia para continuar
-                    ListaEnlazada.Nodo<PeliculaConteo> temp = actual;
+                    ListaEnlazada.Nodo<Pelicula> temp = actual;
                     actual = siguiente;
                     siguiente = temp;
 
@@ -160,24 +140,92 @@ public class UMovieimpl implements UMovieMgt {
     }
 
 
-
-
-
-
-
-
-
     @Override
     public void Top_10_de_las_películas_que_mejor_calificación_media_tienen_por_parte_de_los_usuarios() {
-
+        return;
     }
 
     @Override
     public void Top_5_de_las_colecciones_que_más_ingresos_generaron() {
-        System.out.println("<id_coleccion>,<titulo_coleccion>,<cantidad_peliculas>,[id_p1,id_p2],<ingreso_generado>");
-        System.out.println("Tiempo de ejecución de la consulta: <tiempo_ejecucion>");
+        long inicio = System.currentTimeMillis();
 
+        TablaHash<Integer, Pelicula> tablaPeliculas = cargaDeDatos.getTablaPeliculas();
+        TablaHash<Integer, Saga> tablaSagas = cargaDeDatos.getTablaSagas();
+
+        MyHeapImpl<Saga> top5 = new MyHeapImpl<>();
+
+        // Paso 1: Procesar sagas reales
+        ListaEnlazada<Saga> sagas = tablaSagas.values();  // Usa tu TAD
+        for (int i = 0; i < sagas.tamanio(); i++) {
+            Saga saga = sagas.obtener(i);
+            if (top5.tamaño() < 5) {
+                top5.insertar(saga);
+            } else if (saga.compareTo(top5.verTope()) > 0) {
+                top5.eliminar();
+                top5.insertar(saga);
+            }
+        }
+
+        // Paso 2: Procesar películas individuales como sagas virtuales
+        ListaEnlazada<Pelicula> peliculas = tablaPeliculas.values();  // Usa tu TAD
+        for (int i = 0; i < peliculas.tamanio(); i++) {
+            Pelicula peli = peliculas.obtener(i);
+
+            if (peli.getId_saga() == -1) {
+                int ingreso = (int) peli.getIngreso();
+                Saga virtual = new Saga(peli.getId(), peli.getTitulo(), 1, ingreso);
+
+                if (top5.tamaño() < 5) {
+                    top5.insertar(virtual);
+                } else if (virtual.compareTo(top5.verTope()) > 0) {
+                    top5.eliminar();
+                    top5.insertar(virtual);
+                }
+            }
+        }
+
+        // Paso 3: Extraer Top 5 en orden descendente
+        ListaEnlazada<Saga> topOrdenado = new ListaEnlazada<>();
+        while (!top5.estaVacio()) {
+            topOrdenado.insertar(top5.eliminar()); // inserta al final
+        }
+
+        // Paso 4: Imprimir encabezado
+        System.out.println("<id_coleccion>,<titulo_coleccion>,<cantidad_peliculas>,[id_p1,id_p2],<ingreso_generado>");
+
+        // Paso 5: Imprimir cada colección
+        for (int i = 0; i < topOrdenado.tamanio(); i++) {
+            Saga coleccion = topOrdenado.obtener(i);
+            System.out.print(coleccion.getId() + "," + coleccion.getTitulo() + "," + coleccion.getCantidad_peliculas() + ",[");
+
+            // Buscar las películas que pertenecen a esta colección
+            boolean primero = true;
+            for (int j = 0; j < peliculas.tamanio(); j++) {
+                Pelicula p = peliculas.obtener(j);
+
+                // Película individual tratada como saga
+                if (p.getId_saga() == -1 && p.getId() == coleccion.getId()) {
+                    System.out.print(p.getId());
+                    break;
+                }
+
+                // Película que pertenece a saga real
+                if (p.getId_saga() == coleccion.getId()) {
+                    if (!primero) System.out.print(",");
+                    System.out.print(p.getId());
+                    primero = false;
+                }
+            }
+
+            System.out.println("]," + coleccion.getIngreso_generado());
+        }
+
+        long fin = System.currentTimeMillis();
+        System.out.println("Tiempo de ejecución de la consulta: " + (fin - inicio) + " ms");
     }
+
+
+
 
     @Override
     public void Top_10_de_los_directores_que_mejor_calificación_tienen() {

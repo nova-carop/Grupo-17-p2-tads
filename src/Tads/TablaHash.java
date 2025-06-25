@@ -55,15 +55,16 @@ public class TablaHash<K, V> {
         return get(clave) != null;
     }
 
-    public List<V> values() {
-        List<V> lista = new ArrayList<>();
+    public ListaEnlazada<V> values() {
+        ListaEnlazada<V> lista = new ListaEnlazada<>();
         for (List<Nodo<K, V>> bucket : tabla) {
             for (Nodo<K, V> nodo : bucket) {
-                lista.add(nodo.valor);
+                lista.insertar(nodo.valor);
             }
         }
         return lista;
     }
+
 
     public boolean isEmpty() {
         return size == 0;
@@ -102,4 +103,11 @@ public class TablaHash<K, V> {
         }
         return lista;
     }
+
+
+
+
+
+
+
 }

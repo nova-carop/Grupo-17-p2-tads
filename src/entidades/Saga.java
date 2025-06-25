@@ -1,10 +1,24 @@
 package entidades;
 
-public class Saga {
+import Tads.ListaEnlazada;
+
+public class Saga implements Comparable<Saga> {
     private int id;
     private String titulo;
     private int cantidad_peliculas;
-    private float ingreso_generado;
+    private int ingreso_generado;
+
+    public Saga(int id, String titulo, int cantidad_peliculas, int ingreso_generado) {
+        this.id = id;
+        this.titulo = titulo;
+        this.cantidad_peliculas = cantidad_peliculas;
+        this.ingreso_generado = ingreso_generado;
+    }
+
+    public Saga() {
+    }
+
+
 
     public int getId() {
         return id;
@@ -30,11 +44,19 @@ public class Saga {
         this.cantidad_peliculas = cantidad_peliculas;
     }
 
-    public float getIngreso_generado() {
+    public int getIngreso_generado() {
         return ingreso_generado;
     }
 
-    public void setIngreso_generado(float ingreso_generado) {
+    public void setIngreso_generado(int ingreso_generado) {
         this.ingreso_generado = ingreso_generado;
     }
+
+
+    public int compareTo(Saga otra) {
+        return Integer.compare(this.ingreso_generado, otra.ingreso_generado); // min-heap
+    }
+
+
+
 }
