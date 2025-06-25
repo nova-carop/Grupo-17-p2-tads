@@ -1,9 +1,13 @@
 package entidades;
 
+import Tads.ListaEnlazada;
+
+
 public class Director {
     private String nombre;
     private int cantidad_pelis;
     private float mediana_calificacion;
+    private ListaEnlazada<Pelicula> peliculas;
 
     public String getNombre() {
         return nombre;
@@ -27,5 +31,23 @@ public class Director {
 
     public void setMediana_calificacion(float mediana_calificacion) {
         this.mediana_calificacion = mediana_calificacion;
+    }
+
+    public ListaEnlazada<Pelicula> getPeliculasDirigidas() {
+        return peliculas;
+    }
+
+    public void setPeliculas(ListaEnlazada<Pelicula> peliculas) {
+        this.peliculas = peliculas;
+    }
+
+    public Director(String nombre, int cantidad_pelis, float mediana_calificacion, ListaEnlazada<Pelicula> peliculas) {
+        this.nombre = nombre;
+        this.cantidad_pelis = cantidad_pelis;
+        this.mediana_calificacion = mediana_calificacion;
+        this.peliculas = peliculas;
+    }
+
+    public Director() {
     }
 }

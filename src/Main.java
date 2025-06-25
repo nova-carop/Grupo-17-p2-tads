@@ -1,8 +1,13 @@
+import interfaces.UMovieMgt;
+
 import java.util.Scanner;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         Scanner scanner = new Scanner(System.in);
+        CargaDeDatos cargador = new CargaDeDatos();
+
+        boolean cargaExitosa = false;
         boolean salir = false;
 
         while (!salir) {
@@ -15,9 +20,27 @@ public class Main {
 
             switch (opcion) {
                 case "1":
-                    //FALTA PONER LA CARGA DE DATOS ACA
-                    System.out.println("Carga de datos exitosa, tiempo de ejecución de la carga: <tiempo_ejecucion>");
+                    try {
+                        long inicio = System.currentTimeMillis();
+
+                        int peliculasCargadas = cargador.cargarPeliculas("resources/movies_metadata.csv");
+                        int ratingsCargados = cargador.cargarRatings("resources/ratings_1mm.csv");
+                        int creditosCargados = cargador.cargarCreditos("resources/credits.csv");
+
+                        long fin = System.currentTimeMillis();
+                        long duracion = fin - inicio;
+
+                        if (peliculasCargadas > 0 && ratingsCargados > 0 && creditosCargados > 0) {
+                            System.out.println("Carga de datos exitosa,tiempo de carga: " + duracion + " ms");
+                            cargaExitosa = true;
+                        } else {
+                            System.err.println(" Carga fallida.");
+                        }
+                    } catch (Exception e) {
+                        System.out.println(" Error al cargar los datos: " + e.getMessage());
+                    }
                     break;
+
                 case "2":
                     mostrarMenuConsultas(scanner);
                     break;
@@ -35,6 +58,15 @@ public class Main {
 
     private static void mostrarMenuConsultas(Scanner scanner) {
         boolean volver = false;
+        CargaDeDatos cargaDeDatos = new CargaDeDatos();
+
+        cargaDeDatos.cargarPeliculas("resources/movies_metadata.csv");
+        cargaDeDatos.cargarRatings("resources/ratings_1mm.csv");
+        cargaDeDatos.cargarCreditos("resources/credits.csv");
+
+
+        UMovieimpl umovie = new UMovieimpl(cargaDeDatos);
+
 
         while (!volver) {
             System.out.println("1. Top 5 de las películas que más calificaciones por idioma.");
@@ -49,30 +81,22 @@ public class Main {
 
             switch (opcionConsulta) {
                 case "1":
-                    // LLAMADA A LA LOGICA DE LA FUNCION 1
-                    System.out.println("<id_pelicula>, <titulo_pelicula>,<total_calificaciones>,<idioma>");
-                    System.out.println("Tiempo de ejecución de la consulta: <tiempo_ejecucion>");
+                    umovie.Top_5_de_las_películas_que_más_calificaciones_por_idioma();
                     break;
                 case "2":
-                    // LLAMADA A LA LOGICA DE LA FUNCION 2
-                    System.out.println("<id_pelicula>, <titulo_pelicula>,<calificacion_media>");
-                    System.out.println("Tiempo de ejecución de la consulta: <tiempo_ejecucion>");
+                    umovie.Top_10_de_las_películas_que_mejor_calificación_media_tienen_por_parte_de_los_usuarios();
                     break;
                 case "3":
-                    System.out.println("<id_coleccion>,<titulo_coleccion>,<cantidad_peliculas>,[id_p1,id_p2],<ingreso_generado>");
-                    System.out.println("Tiempo de ejecución de la consulta: <tiempo_ejecucion>");
+                    umovie.Top_5_de_las_colecciones_que_más_ingresos_generaron();
                     break;
                 case "4":
-                    System.out.println("<nombre_director>,<cantidad_peliculas>,<mediana_calificacion>");
-                    System.out.println("Tiempo de ejecución de la consulta: <tiempo_ejecucion>");
+                    umovie.Top_10_de_los_directores_que_mejor_calificación_tienen();
                     break;
                 case "5":
-                    System.out.println("<mes>,<nombre_actor>,<cantidad_peliculas>,<cantidad_de_calificaciones>");
-                    System.out.println("Tiempo de ejecución de la consulta: <tiempo_ejecucion>");
+                    umovie.Actor_con_más_calificaciones_recibidas_en_cada_mes_del_año();
                     break;
                 case "6":
-                    System.out.println("<id_usuario>,<genero>,<cantidad_de_calificaciones_sobre_ese_genero>");
-                    System.out.println("Tiempo de ejecución de la consulta: <tiempo_ejecucion>");
+                    umovie.Usuarios_con_más_calificaciones_por_género();
                     break;
                 case "7":
                     volver = true;
