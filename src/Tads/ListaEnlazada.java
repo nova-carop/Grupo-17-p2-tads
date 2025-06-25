@@ -82,4 +82,18 @@ public class ListaEnlazada<T> {
         cola = null;
         tamanio = 0;
     }
+
+
+    public T obtener(int posicion) {
+        if (posicion < 0 || posicion >= tamanio) {
+            throw new IndexOutOfBoundsException("Índice fuera de rango");
+        }
+
+        Nodo<T> actual = cabeza;
+        for (int i = 0; i < posicion; i++) {
+            actual = actual.getSiguiente();
+        }
+        return actual.getDato();
+    }
+
 }
