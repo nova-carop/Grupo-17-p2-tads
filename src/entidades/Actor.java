@@ -12,6 +12,10 @@ public class Actor {
         this.puntaje = puntaje;
     }
 
+    public Actor() {
+
+    }
+
     public String getNombre() {
         return nombre;
     }

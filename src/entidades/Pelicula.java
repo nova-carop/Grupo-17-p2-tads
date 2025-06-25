@@ -15,6 +15,10 @@ public class Pelicula {
     private ListaEnlazada<Review> review;
     private int ingreso;
 
+    public Pelicula() {
+
+    }
+
     public int getId() {
         return id;
     }

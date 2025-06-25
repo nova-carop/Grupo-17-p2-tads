@@ -18,6 +18,11 @@ public class UMovieimpl implements UMovieMgt {
         this.cargaDeDatos = cargaDeDatos;
     }
 
+    //para pruebas unitarias
+    public UMovieimpl() {
+    }
+
+
     @Override
 
     public void Top_5_de_las_películas_que_más_calificaciones_por_idioma() {
@@ -161,7 +166,7 @@ public class UMovieimpl implements UMovieMgt {
         MyHeapImpl<Saga> top5 = new MyHeapImpl<>();
 
         // Paso 1: Procesar sagas reales
-        ListaEnlazada<Saga> sagas = tablaSagas.values();  // Usa tu TAD
+        ListaEnlazada<Saga> sagas = tablaSagas.values();
         for (int i = 0; i < sagas.tamanio(); i++) {
             Saga saga = sagas.obtener(i);
             if (top5.tamaño() < 5) {
@@ -258,7 +263,7 @@ public class UMovieimpl implements UMovieMgt {
         System.out.println("Mes           Nombre del actor          Películas  Calificaciones");
         System.out.println("---------------------------------------------------------------");
 
-        for (int mes = 0; mes < 12; mes++) {  // Ahora mes va de 0 a 11 para el array
+        for (int mes = 0; mes < 12; mes++) {
             TablaHash<String, int[]> contadoresActores = new TablaHash<>();
 
             ListaEnlazada<Integer> idsPeliculas = reviewsPorPelicula.claves();
@@ -325,8 +330,6 @@ public class UMovieimpl implements UMovieMgt {
         System.out.println("---------------------------------------------------------------");
         System.out.println("Tiempo de ejecución: " + (endTime - startTime) + " ms");
     }
-
-
 
 
 
