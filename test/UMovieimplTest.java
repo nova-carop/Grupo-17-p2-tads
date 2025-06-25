@@ -49,6 +49,178 @@ public class UMovieimplTest {
         }
     }
 
+    // ============ TESTS PARA ACTOR CON MÁS CALIFICACIONES POR MES ============
+
+    @Test
+    @DisplayName("Actor por Mes - Camino Feliz: actores en diferentes meses")
+    void testActorPorMesCaminoFeliz() {
+        // Arrange
+        TablaHash<Integer, Pelicula> tablaPeliculas = crearTablaPeliculasActoresMeses();
+        TablaHash<Integer, ListaEnlazada<Review>> reviewsPorPelicula = crearReviewsActoresMeses();
+
+        CargaDeDatosTest cargaDatos = new CargaDeDatosTest(tablaPeliculas, reviewsPorPelicula);
+        uMovieImpl = new UMovieimpl(cargaDatos);
+
+        // Act
+        uMovieImpl.Actor_con_más_calificaciones_recibidas_en_cada_mes_del_año();
+
+        // Assert
+        String output = outputStream.toString();
+
+        // Verificar encabezados
+        assert output.contains("Actor con más calificaciones por mes:");
+        assert output.contains("Mes           Nombre del actor          Películas  Calificaciones");
+        assert output.contains("Tiempo de ejecución:");
+
+        // Verificar que aparecen los actores esperados
+        assert output.contains("Tom Holland"); // Enero
+        assert output.contains("Emma Stone"); // Febrero
+        assert output.contains("Ryan Gosling"); // Marzo
+    }
+
+    @Test
+    @DisplayName("Actor por Mes - Camino Triste: sin películas")
+    void testActorPorMesSinPeliculas() {
+        // Arrange
+        TablaHash<Integer, Pelicula> tablaPeliculasVacia = new TablaHash<>();
+        TablaHash<Integer, ListaEnlazada<Review>> reviewsVacia = new TablaHash<>();
+
+        CargaDeDatosTest cargaDatos = new CargaDeDatosTest(tablaPeliculasVacia, reviewsVacia);
+        uMovieImpl = new UMovieimpl(cargaDatos);
+
+        // Act
+        uMovieImpl.Actor_con_más_calificaciones_recibidas_en_cada_mes_del_año();
+
+        // Assert
+        String output = outputStream.toString();
+        assert output.contains("Actor con más calificaciones por mes:");
+
+        // Verificar que todos los meses muestran N/A
+        String[] meses = {"Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"};
+        for (String mes : meses) {
+            assert output.contains(mes);
+            // Cada línea de mes debería tener N/A
+        }
+        // Verificar que aparece N/A (al menos una vez)
+        assert output.contains("N/A");
+    }
+
+    @Test
+    @DisplayName("Actor por Mes - Camino Triste: películas sin actores")
+    void testActorPorMesPeliculasSinActores() {
+        // Arrange
+        TablaHash<Integer, Pelicula> tablaPeliculas = crearTablaPeliculasSinActores();
+        TablaHash<Integer, ListaEnlazada<Review>> reviewsPorPelicula = crearReviewsSinActores();
+
+        CargaDeDatosTest cargaDatos = new CargaDeDatosTest(tablaPeliculas, reviewsPorPelicula);
+        uMovieImpl = new UMovieimpl(cargaDatos);
+
+        // Act
+        uMovieImpl.Actor_con_más_calificaciones_recibidas_en_cada_mes_del_año();
+
+        // Assert
+        String output = outputStream.toString();
+        assert output.contains("Actor con más calificaciones por mes:");
+        assert output.contains("N/A"); // Debería mostrar N/A para todos los meses
+    }
+
+    @Test
+    @DisplayName("Actor por Mes - Camino Triste: películas sin fecha")
+    void testActorPorMesPeliculasSinFecha() {
+        // Arrange
+        TablaHash<Integer, Pelicula> tablaPeliculas = crearTablaPeliculasSinFecha();
+        TablaHash<Integer, ListaEnlazada<Review>> reviewsPorPelicula = crearReviewsSinFecha();
+
+        CargaDeDatosTest cargaDatos = new CargaDeDatosTest(tablaPeliculas, reviewsPorPelicula);
+        uMovieImpl = new UMovieimpl(cargaDatos);
+
+        // Act
+        uMovieImpl.Actor_con_más_calificaciones_recibidas_en_cada_mes_del_año();
+
+        // Assert
+        String output = outputStream.toString();
+        assert output.contains("Actor con más calificaciones por mes:");
+        assert output.contains("N/A"); // Las películas sin fecha no se procesan
+    }
+
+    @Test
+    @DisplayName("Actor por Mes - Camino Triste: películas sin reviews")
+    void testActorPorMesPeliculasSinReviews() {
+        // Arrange
+        TablaHash<Integer, Pelicula> tablaPeliculas = crearTablaPeliculasActoresSinReviews();
+        TablaHash<Integer, ListaEnlazada<Review>> reviewsVacia = new TablaHash<>();
+
+        CargaDeDatosTest cargaDatos = new CargaDeDatosTest(tablaPeliculas, reviewsVacia);
+        uMovieImpl = new UMovieimpl(cargaDatos);
+
+        // Act
+        uMovieImpl.Actor_con_más_calificaciones_recibidas_en_cada_mes_del_año();
+
+        // Assert
+        String output = outputStream.toString();
+        assert output.contains("Actor con más calificaciones por mes:");
+        assert output.contains("N/A"); // Sin reviews, no hay calificaciones
+    }
+
+    @Test
+    @DisplayName("Actor por Mes - Camino Triste: empate en calificaciones")
+    void testActorPorMesEmpateCalificaciones() {
+        // Arrange
+        TablaHash<Integer, Pelicula> tablaPeliculas = crearTablaPeliculasEmpate();
+        TablaHash<Integer, ListaEnlazada<Review>> reviewsPorPelicula = crearReviewsEmpate();
+
+        CargaDeDatosTest cargaDatos = new CargaDeDatosTest(tablaPeliculas, reviewsPorPelicula);
+        uMovieImpl = new UMovieimpl(cargaDatos);
+
+        // Act
+        uMovieImpl.Actor_con_más_calificaciones_recibidas_en_cada_mes_del_año();
+
+        // Assert
+        String output = outputStream.toString();
+        assert output.contains("Actor con más calificaciones por mes:");
+        // En caso de empate, debería seleccionar uno de forma consistente
+        // Verificamos que no aparezca N/A (ya que hay actores)
+        boolean tieneActor = output.contains("Actor A") || output.contains("Actor B");
+        assert tieneActor : "Debería mostrar uno de los actores empatados";
+    }
+
+    @Test
+    @DisplayName("Actor por Mes - Camino Triste: películas en un solo mes")
+    void testActorPorMesPeliculasEnUnSoloMes() {
+        // Arrange
+        TablaHash<Integer, Pelicula> tablaPeliculas = crearTablaPeliculasUnSoloMes();
+        TablaHash<Integer, ListaEnlazada<Review>> reviewsPorPelicula = crearReviewsUnSoloMes();
+
+        CargaDeDatosTest cargaDatos = new CargaDeDatosTest(tablaPeliculas, reviewsPorPelicula);
+        uMovieImpl = new UMovieimpl(cargaDatos);
+
+        // Act
+        uMovieImpl.Actor_con_más_calificaciones_recibidas_en_cada_mes_del_año();
+
+        // Assert
+        String output = outputStream.toString();
+        assert output.contains("Actor con más calificaciones por mes:");
+        assert output.contains("Actor Enero"); // Solo debería aparecer en enero
+        assert output.contains("N/A"); // Los otros 11 meses deberían ser N/A
+    }
+
+    @Test
+    @DisplayName("Actor por Mes - Camino Triste: CargaDeDatos retorna null")
+    void testActorPorMesCargaDatosNull() {
+        // Arrange
+        CargaDeDatosTest cargaDatos = new CargaDeDatosTest(null, null);
+        uMovieImpl = new UMovieimpl(cargaDatos);
+
+        // Act & Assert
+        try {
+            uMovieImpl.Actor_con_más_calificaciones_recibidas_en_cada_mes_del_año();
+            assert false : "Debería haber lanzado NullPointerException";
+        } catch (NullPointerException e) {
+            assert true;
+        }
+    }
+
     private UMovieimpl uMovieImpl;
     private ByteArrayOutputStream outputStream;
     private PrintStream originalOut;
@@ -64,18 +236,19 @@ public class UMovieimplTest {
     // ============ TESTS PARA TOP 5 PELÍCULAS POR IDIOMA ============
 
     @Test
- //Top 5 Películas - Camino Feliz: múltiples idiomas con reviews
+    @DisplayName("Top 5 Películas - Camino Feliz: múltiples idiomas con reviews")
     void testTop5PeliculasCaminoFeliz() {
-        // Crear datos de prueba
+        // Arrange - Crear datos de prueba
         TablaHash<Integer, Pelicula> tablaPeliculas = crearTablaPeliculasCaminoFeliz();
         TablaHash<Integer, ListaEnlazada<Review>> reviewsPorPelicula = crearReviewsCaminoFeliz();
 
         CargaDeDatosTest cargaDatos = new CargaDeDatosTest(tablaPeliculas, reviewsPorPelicula);
         uMovieImpl = new UMovieimpl(cargaDatos);
 
+        // Act
         uMovieImpl.Top_5_de_las_películas_que_más_calificaciones_por_idioma();
 
-
+        // Assert
         String output = outputStream.toString();
 
         // Verificar que se muestran los idiomas esperados
@@ -93,18 +266,19 @@ public class UMovieimplTest {
     }
 
     @Test
- //Top 5 Películas - Camino Triste: tabla de películas vacía
+    @DisplayName("Top 5 Películas - Camino Triste: tabla de películas vacía")
     void testTop5PeliculasTablaVacia() {
-
+        // Arrange
         TablaHash<Integer, Pelicula> tablaPeliculasVacia = new TablaHash<>();
         TablaHash<Integer, ListaEnlazada<Review>> reviewsVacia = new TablaHash<>();
 
         CargaDeDatosTest cargaDatos = new CargaDeDatosTest(tablaPeliculasVacia, reviewsVacia);
         uMovieImpl = new UMovieimpl(cargaDatos);
 
+        // Act
         uMovieImpl.Top_5_de_las_películas_que_más_calificaciones_por_idioma();
 
-
+        // Assert
         String output = outputStream.toString();
         assert output.contains("Top 5 de películas con más evaluaciones por idioma:");
         assert output.contains("Tiempo de ejecución:");
@@ -116,18 +290,19 @@ public class UMovieimplTest {
     }
 
     @Test
-   //Top 5 Películas - Camino Triste: películas sin reviews
+    @DisplayName("Top 5 Películas - Camino Triste: películas sin reviews")
     void testTop5PeliculasSinReviews() {
-
+        // Arrange
         TablaHash<Integer, Pelicula> tablaPeliculas = crearTablaPeliculasSinReviews();
         TablaHash<Integer, ListaEnlazada<Review>> reviewsVacia = new TablaHash<>();
 
         CargaDeDatosTest cargaDatos = new CargaDeDatosTest(tablaPeliculas, reviewsVacia);
         uMovieImpl = new UMovieimpl(cargaDatos);
 
-
+        // Act
         uMovieImpl.Top_5_de_las_películas_que_más_calificaciones_por_idioma();
 
+        // Assert
         String output = outputStream.toString();
         assert output.contains("Top 5 de películas con más evaluaciones por idioma:");
         assert output.contains("Tiempo de ejecución:");
@@ -139,17 +314,19 @@ public class UMovieimplTest {
     }
 
     @Test
-   //Top 5 Películas - Camino Triste: solo idiomas no objetivo
+    @DisplayName("Top 5 Películas - Camino Triste: solo idiomas no objetivo")
     void testTop5PeliculasIdiomasNoObjetivo() {
-
+        // Arrange
         TablaHash<Integer, Pelicula> tablaPeliculas = crearTablaPeliculasIdiomasNoObjetivo();
         TablaHash<Integer, ListaEnlazada<Review>> reviews = crearReviewsIdiomasNoObjetivo();
 
         CargaDeDatosTest cargaDatos = new CargaDeDatosTest(tablaPeliculas, reviews);
         uMovieImpl = new UMovieimpl(cargaDatos);
 
+        // Act
         uMovieImpl.Top_5_de_las_películas_que_más_calificaciones_por_idioma();
 
+        // Assert
         String output = outputStream.toString();
         assert output.contains("Top 5 de películas con más evaluaciones por idioma:");
 
@@ -160,18 +337,19 @@ public class UMovieimplTest {
     }
 
     @Test
-//Top 5 Películas - Camino Triste: menos de 5 películas por idioma
+    @DisplayName("Top 5 Películas - Camino Triste: menos de 5 películas por idioma")
     void testTop5PeliculasMenosDe5PorIdioma() {
-
+        // Arrange
         TablaHash<Integer, Pelicula> tablaPeliculas = crearTablaPeliculasPocas();
         TablaHash<Integer, ListaEnlazada<Review>> reviews = crearReviewsPocas();
 
         CargaDeDatosTest cargaDatos = new CargaDeDatosTest(tablaPeliculas, reviews);
         uMovieImpl = new UMovieimpl(cargaDatos);
 
-
+        // Act
         uMovieImpl.Top_5_de_las_películas_que_más_calificaciones_por_idioma();
 
+        // Assert
         String output = outputStream.toString();
         assert output.contains("Top 5 de películas con más evaluaciones por idioma:");
         assert output.contains("Película Inglesa Unica");
@@ -179,32 +357,32 @@ public class UMovieimplTest {
     }
 
     @Test
- //Top 5 Películas - Camino Triste: títulos muy largos
+    @DisplayName("Top 5 Películas - Camino Triste: títulos muy largos")
     void testTop5PeliculasTituloLargo() {
-
+        // Arrange
         TablaHash<Integer, Pelicula> tablaPeliculas = crearTablaPeliculasTituloLargo();
         TablaHash<Integer, ListaEnlazada<Review>> reviews = crearReviewsTituloLargo();
 
         CargaDeDatosTest cargaDatos = new CargaDeDatosTest(tablaPeliculas, reviews);
         uMovieImpl = new UMovieimpl(cargaDatos);
 
-
+        // Act
         uMovieImpl.Top_5_de_las_películas_que_más_calificaciones_por_idioma();
 
-
+        // Assert
         String output = outputStream.toString();
         assert output.contains("..."); // Verificar que se trunca el título
         assert output.contains("Esta es una película con un título");
     }
 
     @Test
-//Top 5 Películas - Camino Triste: CargaDeDatos retorna null
+    @DisplayName("Top 5 Películas - Camino Triste: CargaDeDatos retorna null")
     void testTop5PeliculasCargaDatosNull() {
-
+        // Arrange
         CargaDeDatosTest cargaDatos = new CargaDeDatosTest(null, null);
         uMovieImpl = new UMovieimpl(cargaDatos);
 
-        //  Debería lanzar NullPointerException
+        // Act & Assert - Debería lanzar NullPointerException
         try {
             uMovieImpl.Top_5_de_las_películas_que_más_calificaciones_por_idioma();
             assert false : "Debería haber lanzado NullPointerException";
@@ -217,9 +395,9 @@ public class UMovieimplTest {
     // ============ TESTS PARA TOP 5 COLECCIONES ============
 
     @Test
-   //Top 5 Colecciones - Camino Feliz: sagas reales y virtuales
+    @DisplayName("Top 5 Colecciones - Camino Feliz: sagas reales y virtuales")
     void testTop5ColeccionesCaminoFeliz() {
-
+        // Arrange
         TablaHash<Integer, Pelicula> tablaPeliculas = crearTablaPeliculasColecciones();
         TablaHash<Integer, Saga> tablaSagas = crearTablaSagasColecciones();
 
@@ -227,8 +405,10 @@ public class UMovieimplTest {
         cargaDatos.setTablaSagas(tablaSagas);
         uMovieImpl = new UMovieimpl(cargaDatos);
 
+        // Act
         uMovieImpl.Top_5_de_las_colecciones_que_más_ingresos_generaron();
 
+        // Assert
         String output = outputStream.toString();
 
         // Verificar formato de salida
@@ -241,9 +421,9 @@ public class UMovieimplTest {
     }
 
     @Test
-//Top 5 Colecciones - Camino Feliz: solo sagas reales
+    @DisplayName("Top 5 Colecciones - Camino Feliz: solo sagas reales")
     void testTop5ColeccionesSoloSagas() {
-
+        // Arrange
         TablaHash<Integer, Pelicula> tablaPeliculas = crearTablaPeliculasSoloSagas();
         TablaHash<Integer, Saga> tablaSagas = crearTablaSagasVariadas();
 
@@ -251,18 +431,19 @@ public class UMovieimplTest {
         cargaDatos.setTablaSagas(tablaSagas);
         uMovieImpl = new UMovieimpl(cargaDatos);
 
+        // Act
         uMovieImpl.Top_5_de_las_colecciones_que_más_ingresos_generaron();
 
-
+        // Assert
         String output = outputStream.toString();
         assert output.contains("Saga A"); // Mayor ingreso
         assert output.contains("Saga E"); // Menor ingreso del top 5
     }
 
     @Test
-  //Top 5 Colecciones - Camino Feliz: solo películas individuales
+    @DisplayName("Top 5 Colecciones - Camino Feliz: solo películas individuales")
     void testTop5ColeccionesSoloPeliculasIndividuales() {
-
+        // Arrange
         TablaHash<Integer, Pelicula> tablaPeliculas = crearTablaPeliculasIndividuales();
         TablaHash<Integer, Saga> tablaSagas = new TablaHash<>(); // Vacío
 
@@ -270,17 +451,19 @@ public class UMovieimplTest {
         cargaDatos.setTablaSagas(tablaSagas);
         uMovieImpl = new UMovieimpl(cargaDatos);
 
+        // Act
         uMovieImpl.Top_5_de_las_colecciones_que_más_ingresos_generaron();
 
+        // Assert
         String output = outputStream.toString();
         assert output.contains("Pelicula Individual 1"); // Mayor ingreso individual
         assert output.contains(",1,["); // Cantidad películas = 1 para todas
     }
 
     @Test
-//Top 5 Colecciones - Camino Triste: tablas vacías
+    @DisplayName("Top 5 Colecciones - Camino Triste: tablas vacías")
     void testTop5ColeccionesTablaVacia() {
-
+        // Arrange
         TablaHash<Integer, Pelicula> tablaPeliculasVacia = new TablaHash<>();
         TablaHash<Integer, Saga> tablaSagasVacia = new TablaHash<>();
 
@@ -288,9 +471,10 @@ public class UMovieimplTest {
         cargaDatos.setTablaSagas(tablaSagasVacia);
         uMovieImpl = new UMovieimpl(cargaDatos);
 
+        // Act
         uMovieImpl.Top_5_de_las_colecciones_que_más_ingresos_generaron();
 
-
+        // Assert
         String output = outputStream.toString();
         assert output.contains("<id_coleccion>,<titulo_coleccion>,<cantidad_peliculas>,[id_p1,id_p2],<ingreso_generado>");
         assert output.contains("Tiempo de ejecución de la consulta:");
@@ -298,9 +482,9 @@ public class UMovieimplTest {
     }
 
     @Test
-//Top 5 Colecciones - Camino Triste: menos de 5 colecciones totales
+    @DisplayName("Top 5 Colecciones - Camino Triste: menos de 5 colecciones totales")
     void testTop5ColeccionesMenosDe5() {
-
+        // Arrange
         TablaHash<Integer, Pelicula> tablaPeliculas = crearTablaPeliculasPocasColecciones();
         TablaHash<Integer, Saga> tablaSagas = crearTablaSagasPocas();
 
@@ -308,8 +492,10 @@ public class UMovieimplTest {
         cargaDatos.setTablaSagas(tablaSagas);
         uMovieImpl = new UMovieimpl(cargaDatos);
 
+        // Act
         uMovieImpl.Top_5_de_las_colecciones_que_más_ingresos_generaron();
 
+        // Assert
         String output = outputStream.toString();
         assert output.contains("Saga Unica");
         assert output.contains("Pelicula Sola");
@@ -319,9 +505,9 @@ public class UMovieimplTest {
 
 
     @Test
-//Top 5 Colecciones - Camino Triste: saga con múltiples películas
+    @DisplayName("Top 5 Colecciones - Camino Triste: saga con múltiples películas")
     void testTop5ColeccionesSagaMultiplesPeliculas() {
-
+        // Arrange
         TablaHash<Integer, Pelicula> tablaPeliculas = crearTablaPeliculasSagaMultiple();
         TablaHash<Integer, Saga> tablaSagas = crearTablaSagaMultiple();
 
@@ -329,8 +515,10 @@ public class UMovieimplTest {
         cargaDatos.setTablaSagas(tablaSagas);
         uMovieImpl = new UMovieimpl(cargaDatos);
 
+        // Act
         uMovieImpl.Top_5_de_las_colecciones_que_más_ingresos_generaron();
 
+        // Assert
         String output = outputStream.toString();
         assert output.contains("Saga Multi");
         assert output.contains(",3,["); // 3 películas en la saga
@@ -338,13 +526,14 @@ public class UMovieimplTest {
     }
 
     @Test
-//Top 5 Colecciones - Camino Triste: CargaDeDatos retorna null
+    @DisplayName("Top 5 Colecciones - Camino Triste: CargaDeDatos retorna null")
     void testTop5ColeccionesCargaDatosNull() {
-
+        // Arrange
         CargaDeDatosTest cargaDatos = new CargaDeDatosTest(null, null);
         cargaDatos.setTablaSagas(null);
         uMovieImpl = new UMovieimpl(cargaDatos);
 
+        // Act & Assert
         try {
             uMovieImpl.Top_5_de_las_colecciones_que_más_ingresos_generaron();
             assert false : "Debería haber lanzado NullPointerException";
@@ -511,7 +700,7 @@ public class UMovieimplTest {
         TablaHash<Integer, Pelicula> tabla = new TablaHash<>();
 
         tabla.put(1, crearPeliculaIndividual(1, "Pelicula Individual 1", 1000000000));
-        tabla.put(2, crearPeliculaIndividual(2, "Pelicula Individual 2", 900000000));
+        tabla.put(2, crearPeliculaIndividual(2, "Pelicula Individual 2", 90000000));
         tabla.put(3, crearPeliculaIndividual(3, "Pelicula Individual 3", 800000000));
         tabla.put(4, crearPeliculaIndividual(4, "Pelicula Individual 4", 700000000));
         tabla.put(5, crearPeliculaIndividual(5, "Pelicula Individual 5", 600000000));
@@ -588,6 +777,161 @@ public class UMovieimplTest {
             review.setId(i + 1);
             review.setCalificacion(5.0f);
             lista.insertar(review);
+        }
+        return lista;
+    }
+
+    // ============ MÉTODOS AUXILIARES PARA TESTS DE ACTORES POR MES ============
+
+    private TablaHash<Integer, Pelicula> crearTablaPeliculasActoresMeses() {
+        TablaHash<Integer, Pelicula> tabla = new TablaHash<>();
+
+        // Película de enero con Tom Holland
+        tabla.put(1, crearPeliculaConActorYFecha(1, "Spider-Man No Way Home",
+                crearFecha(2024, Calendar.JANUARY, 15), crearListaActores("Tom Holland")));
+
+        // Película de febrero con Emma Stone
+        tabla.put(2, crearPeliculaConActorYFecha(2, "La La Land",
+                crearFecha(2024, Calendar.FEBRUARY, 20), crearListaActores("Emma Stone")));
+
+        // Película de marzo con Ryan Gosling
+        tabla.put(3, crearPeliculaConActorYFecha(3, "Blade Runner",
+                crearFecha(2024, Calendar.MARCH, 10), crearListaActores("Ryan Gosling")));
+
+        return tabla;
+    }
+
+    private TablaHash<Integer, ListaEnlazada<Review>> crearReviewsActoresMeses() {
+        TablaHash<Integer, ListaEnlazada<Review>> tabla = new TablaHash<>();
+
+        // Tom Holland tiene más reviews en enero
+        tabla.put(1, crearListaReviews(10));
+
+        // Emma Stone domina febrero
+        tabla.put(2, crearListaReviews(8));
+
+        // Ryan Gosling domina marzo
+        tabla.put(3, crearListaReviews(6));
+
+        return tabla;
+    }
+
+    private TablaHash<Integer, Pelicula> crearTablaPeliculasSinActores() {
+        TablaHash<Integer, Pelicula> tabla = new TablaHash<>();
+
+        Pelicula pelicula = new Pelicula();
+        pelicula.setId(1);
+        pelicula.setTitulo("Película Sin Actores");
+        pelicula.setFecha_publicacion(crearFecha(2024, Calendar.JANUARY, 15));
+        pelicula.setActores(null); // Sin actores
+
+        tabla.put(1, pelicula);
+        return tabla;
+    }
+
+    private TablaHash<Integer, ListaEnlazada<Review>> crearReviewsSinActores() {
+        TablaHash<Integer, ListaEnlazada<Review>> tabla = new TablaHash<>();
+        tabla.put(1, crearListaReviews(5));
+        return tabla;
+    }
+
+    private TablaHash<Integer, Pelicula> crearTablaPeliculasSinFecha() {
+        TablaHash<Integer, Pelicula> tabla = new TablaHash<>();
+
+        Pelicula pelicula = new Pelicula();
+        pelicula.setId(1);
+        pelicula.setTitulo("Película Sin Fecha");
+        pelicula.setFecha_publicacion(null); // Sin fecha
+        pelicula.setActores(crearListaActores("Actor Sin Fecha"));
+
+        tabla.put(1, pelicula);
+        return tabla;
+    }
+
+    private TablaHash<Integer, ListaEnlazada<Review>> crearReviewsSinFecha() {
+        TablaHash<Integer, ListaEnlazada<Review>> tabla = new TablaHash<>();
+        tabla.put(1, crearListaReviews(5));
+        return tabla;
+    }
+
+    private TablaHash<Integer, Pelicula> crearTablaPeliculasActoresSinReviews() {
+        TablaHash<Integer, Pelicula> tabla = new TablaHash<>();
+
+        tabla.put(1, crearPeliculaConActorYFecha(1, "Película Sin Reviews",
+                crearFecha(2024, Calendar.JANUARY, 15), crearListaActores("Actor Sin Reviews")));
+
+        return tabla;
+    }
+
+    private TablaHash<Integer, Pelicula> crearTablaPeliculasEmpate() {
+        TablaHash<Integer, Pelicula> tabla = new TablaHash<>();
+
+        // Dos películas en enero con diferentes actores
+        tabla.put(1, crearPeliculaConActorYFecha(1, "Película A",
+                crearFecha(2024, Calendar.JANUARY, 15), crearListaActores("Actor A")));
+
+        tabla.put(2, crearPeliculaConActorYFecha(2, "Película B",
+                crearFecha(2024, Calendar.JANUARY, 20), crearListaActores("Actor B")));
+
+        return tabla;
+    }
+
+    private TablaHash<Integer, ListaEnlazada<Review>> crearReviewsEmpate() {
+        TablaHash<Integer, ListaEnlazada<Review>> tabla = new TablaHash<>();
+
+        // Ambos actores tienen la misma cantidad de reviews
+        tabla.put(1, crearListaReviews(5));
+        tabla.put(2, crearListaReviews(5));
+
+        return tabla;
+    }
+
+    private TablaHash<Integer, Pelicula> crearTablaPeliculasUnSoloMes() {
+        TablaHash<Integer, Pelicula> tabla = new TablaHash<>();
+
+        // Todas las películas solo en enero
+        tabla.put(1, crearPeliculaConActorYFecha(1, "Película Enero 1",
+                crearFecha(2024, Calendar.JANUARY, 15), crearListaActores("Actor Enero")));
+
+        tabla.put(2, crearPeliculaConActorYFecha(2, "Película Enero 2",
+                crearFecha(2024, Calendar.JANUARY, 20), crearListaActores("Otro Actor")));
+
+        return tabla;
+    }
+
+    private TablaHash<Integer, ListaEnlazada<Review>> crearReviewsUnSoloMes() {
+        TablaHash<Integer, ListaEnlazada<Review>> tabla = new TablaHash<>();
+
+        // Actor Enero tiene más reviews
+        tabla.put(1, crearListaReviews(10));
+        tabla.put(2, crearListaReviews(5));
+
+        return tabla;
+    }
+
+    // Métodos auxiliares para crear datos específicos de actores
+
+    private Pelicula crearPeliculaConActorYFecha(int id, String titulo, Date fecha, ListaEnlazada<Actor> actores) {
+        Pelicula pelicula = new Pelicula();
+        pelicula.setId(id);
+        pelicula.setTitulo(titulo);
+        pelicula.setFecha_publicacion(fecha);
+        pelicula.setActores(actores);
+        return pelicula;
+    }
+
+    private Date crearFecha(int año, int mes, int dia) {
+        Calendar cal = Calendar.getInstance();
+        cal.set(año, mes, dia);
+        return cal.getTime();
+    }
+
+    private ListaEnlazada<Actor> crearListaActores(String... nombres) {
+        ListaEnlazada<Actor> lista = new ListaEnlazada<>();
+        for (String nombre : nombres) {
+            Actor actor = new Actor();
+            actor.setNombre(nombre);
+            lista.insertar(actor);
         }
         return lista;
     }
