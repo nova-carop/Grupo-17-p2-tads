@@ -1,4 +1,5 @@
 import Tads.MyHeapImpl;
+import entidades.Actor;
 import entidades.Pelicula;
 import entidades.Review;
 import Tads.ListaEnlazada;
@@ -7,6 +8,8 @@ import entidades.Saga;
 import interfaces.UMovieMgt;
 
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
 
 public class UMovieimpl implements UMovieMgt {
     private CargaDeDatos cargaDeDatos;
@@ -39,12 +42,15 @@ public class UMovieimpl implements UMovieMgt {
             ListaEnlazada<Pelicula> peliculasIdioma = new ListaEnlazada<>();
 
             // recolectar todas las películas del idioma actual que tienen reviews
-            for (Integer idPelicula : reviewsPorPelicula.claves()) {
+            ListaEnlazada<Integer> claves = reviewsPorPelicula.claves();
+            for (int i = 0; i < claves.tamanio(); i++) {
+                Integer idPelicula = claves.obtener(i);
                 Pelicula pelicula = tablaPeliculas.get(idPelicula);
                 if (pelicula != null && idioma.equals(pelicula.getIdioma_original())) {
                     peliculasIdioma.insertar(pelicula);
                 }
             }
+
 
             // ordenar las películas por cantidad de reviews (descendente)
             ordenarPeliculasPorReviews(peliculasIdioma, reviewsPorPelicula);
@@ -167,7 +173,7 @@ public class UMovieimpl implements UMovieMgt {
         }
 
         // Paso 2: Procesar películas individuales como sagas virtuales
-        ListaEnlazada<Pelicula> peliculas = tablaPeliculas.values();  // Usa tu TAD
+        ListaEnlazada<Pelicula> peliculas = tablaPeliculas.values();
         for (int i = 0; i < peliculas.tamanio(); i++) {
             Pelicula peli = peliculas.obtener(i);
 
@@ -234,12 +240,96 @@ public class UMovieimpl implements UMovieMgt {
 
     }
 
+
     @Override
     public void Actor_con_más_calificaciones_recibidas_en_cada_mes_del_año() {
-        System.out.println("<mes>,<nombre_actor>,<cantidad_peliculas>,<cantidad_de_calificaciones>");
-        System.out.println("Tiempo de ejecución de la consulta: <tiempo_ejecucion>");
+        long startTime = System.currentTimeMillis();
 
+        // Array con nombres de los meses en español
+        String[] nombresMeses = {
+                "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+        };
+
+        TablaHash<Integer, Pelicula> tablaPeliculas = cargaDeDatos.getTablaPeliculas();
+        TablaHash<Integer, ListaEnlazada<Review>> reviewsPorPelicula = cargaDeDatos.getReviewsPorPelicula();
+
+        System.out.println("\nActor con más calificaciones por mes:");
+        System.out.println("Mes           Nombre del actor          Películas  Calificaciones");
+        System.out.println("---------------------------------------------------------------");
+
+        for (int mes = 0; mes < 12; mes++) {  // Ahora mes va de 0 a 11 para el array
+            TablaHash<String, int[]> contadoresActores = new TablaHash<>();
+
+            ListaEnlazada<Integer> idsPeliculas = reviewsPorPelicula.claves();
+
+            for (int i = 0; i < idsPeliculas.tamanio(); i++) {
+                Integer idPelicula = idsPeliculas.obtener(i);
+                Pelicula pelicula = tablaPeliculas.get(idPelicula);
+
+                if (pelicula != null && pelicula.getActores() != null && pelicula.getFecha_publicacion() != null) {
+                    Calendar cal = Calendar.getInstance();
+                    cal.setTime(pelicula.getFecha_publicacion());
+                    int mesPelicula = cal.get(Calendar.MONTH);  // 0-11
+
+                    if (mesPelicula == mes) {
+                        int cantidadReviews = contarReviews(reviewsPorPelicula.get(idPelicula));
+
+                        ListaEnlazada<Actor> actores = pelicula.getActores();
+                        ListaEnlazada.Nodo<Actor> nodoActor = actores.getCabeza();
+
+                        while (nodoActor != null) {
+                            Actor actor = nodoActor.getDato();
+                            String nombreActor = actor.getNombre();
+
+                            int[] contadores = contadoresActores.get(nombreActor);
+                            if (contadores == null) {
+                                contadores = new int[2];
+                                contadoresActores.put(nombreActor, contadores);
+                            }
+
+                            contadores[0]++;
+                            contadores[1] += cantidadReviews;
+
+                            nodoActor = nodoActor.getSiguiente();
+                        }
+                    }
+                }
+            }
+
+            String actorTop = "N/A";
+            int maxCalificaciones = 0;
+            int peliculasTop = 0;
+
+            ListaEnlazada<String> nombresActores = contadoresActores.claves();
+            for (int i = 0; i < nombresActores.tamanio(); i++) {
+                String nombreActor = nombresActores.obtener(i);
+                int[] contadores = contadoresActores.get(nombreActor);
+
+                if (contadores[1] > maxCalificaciones) {
+                    actorTop = nombreActor;
+                    maxCalificaciones = contadores[1];
+                    peliculasTop = contadores[0];
+                }
+            }
+
+            // Formatear la salida con nombres de meses
+            System.out.printf("%-12s %-25s %6d %12d%n",
+                    nombresMeses[mes],
+                    actorTop,
+                    peliculasTop,
+                    maxCalificaciones);
+        }
+
+        long endTime = System.currentTimeMillis();
+        System.out.println("---------------------------------------------------------------");
+        System.out.println("Tiempo de ejecución: " + (endTime - startTime) + " ms");
     }
+
+
+
+
+
 
     @Override
     public void Usuarios_con_más_calificaciones_por_género() {

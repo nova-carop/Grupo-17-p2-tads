@@ -96,6 +96,19 @@ public class ListaEnlazada<T> {
         return actual.getDato();
     }
 
+    public boolean contiene(T elemento) {
+        Nodo<T> actual = cabeza;
+        while (actual != null) {
+            if (actual.getDato().equals(elemento)) {
+                return true;
+            }
+            actual = actual.getSiguiente();
+        }
+        return false;
+    }
+
+
+
 
 
 }

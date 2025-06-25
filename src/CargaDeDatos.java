@@ -88,7 +88,7 @@ public class CargaDeDatos {
 
         // Crear película con ingresos
         Pelicula pelicula = new Pelicula(id, titulo, idioma, 0.0f, fecha);
-        pelicula.setIngreso(revenue);  // ⬅️ ahora se guarda el ingreso
+        pelicula.setIngreso(revenue);
         tablaPeliculas.put(id, pelicula);
 
         // Si tiene saga, la procesamos y le sumamos el ingreso a la saga
@@ -351,5 +351,9 @@ public class CargaDeDatos {
 
     public TablaHash<String, Director> getDirectores() {
         return directores;
+    }
+
+    public TablaHash<String, Actor> getActores() {
+        return actores;
     }
 }
