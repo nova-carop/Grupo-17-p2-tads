@@ -7,9 +7,8 @@ import Tads.TablaHash;
 import entidades.Saga;
 import interfaces.UMovieMgt;
 
-import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Date;
+import java.util.List;
 
 public class UMovieimpl implements UMovieMgt {
     private CargaDeDatos cargaDeDatos;
@@ -84,7 +83,7 @@ public class UMovieimpl implements UMovieMgt {
         System.out.println("Tiempo de ejecución: " + (endTime - startTime) + " ms");
     }
 
-    // Método auxiliar para contar reviews de una película
+    // Metodo auxiliar para contar reviews de una película
     private int contarReviews(ListaEnlazada<Review> reviews) {
         if (reviews == null) return 0;
 
@@ -97,9 +96,8 @@ public class UMovieimpl implements UMovieMgt {
         return contador;
     }
 
-    // Método para ordenar películas por cantidad de reviews (descendente)
-    private void ordenarPeliculasPorReviews(ListaEnlazada<Pelicula> peliculas,
-                                            TablaHash<Integer, ListaEnlazada<Review>> reviewsPorPelicula) {
+    // Metodo para ordenar películas por cantidad de reviews (descendente)
+    private void ordenarPeliculasPorReviews(ListaEnlazada<Pelicula> peliculas, TablaHash<Integer, ListaEnlazada<Review>> reviewsPorPelicula) {
         if (peliculas.estaVacia() || peliculas.tamanio() == 1) {
             return;
         }
@@ -145,11 +143,137 @@ public class UMovieimpl implements UMovieMgt {
         } while (intercambiado);
     }
 
-
     @Override
     public void Top_10_de_las_películas_que_mejor_calificación_media_tienen_por_parte_de_los_usuarios() {
-        return;
+        TablaHash<Integer, Pelicula> tablaPeliculas = cargaDeDatos.getTablaPeliculas();
+        TablaHash<Integer, ListaEnlazada<Review>> reviewsPorPelicula = cargaDeDatos.getReviewsPorPelicula();
+
+        // ✅ Validaciones iniciales
+        if (tablaPeliculas == null || reviewsPorPelicula == null) {
+            System.out.println("Error: No se cargaron las tablas de películas o reseñas.");
+            return;
+        }
+
+        if (tablaPeliculas.size() == 0 || reviewsPorPelicula.size() == 0) {
+            System.out.println("Advertencia: No hay películas ni reseñas cargadas.");
+            return;
+        }
+
+        // Crear lista temporal para almacenar información relevante
+        ListaEnlazada<Pelicula> peliculasConMedia = new ListaEnlazada<>();
+
+        // Recoger IDs de películas
+        ListaEnlazada<Integer> idsPeliculas = reviewsPorPelicula.claves();
+
+        int totalPeliculasProcesadas = 0;
+
+        for (int i = 0; i < idsPeliculas.tamanio(); i++) {
+            Integer idPelicula = idsPeliculas.obtener(i);
+            Pelicula pelicula = tablaPeliculas.get(idPelicula);
+
+            if (pelicula != null) {
+                ListaEnlazada<Review> reviews = reviewsPorPelicula.get(idPelicula);
+
+                if (reviews == null || reviews.estaVacia()) {
+                    continue;
+                }
+
+                float sumaCalificaciones = 0;
+                int cantidadReseñas = 0;
+
+                ListaEnlazada.Nodo<Review> nodo = reviews.getCabeza();
+                while (nodo != null) {
+                    Review review = nodo.getDato();
+                    sumaCalificaciones += review.getCalificacion();
+                    cantidadReseñas++;
+                    nodo = nodo.getSiguiente();
+                }
+
+                // Solo considerar películas con más de 100 reseñas
+                if (cantidadReseñas > 100) {
+                    float calificacionMedia = sumaCalificaciones / cantidadReseñas;
+                    pelicula.setCalificacion_media(calificacionMedia); // Actualizar calificación media
+                    peliculasConMedia.insertar(pelicula);
+                    totalPeliculasProcesadas++;
+                }
+            }
+        }
+
+        // Si no hay ninguna película válida, salimos
+        if (peliculasConMedia.estaVacia()) {
+            System.out.println("No hay películas con más de 100 reseñas.");
+            return;
+        }
+
+        // Ordenar por calificación media descendente
+        ordenarListaPorMediaDescendente(peliculasConMedia);
+
+        System.out.println("\nTop 10 películas que mejor calificación media tienen segun los usuarios");
+        System.out.println("ID     Título                                      Evaluaciones  Calificación Media");
+        System.out.println("------------------------------------------------------------------------------------");
+
+        // Imprimir resultados
+        int contador = 0;
+        ListaEnlazada.Nodo<Pelicula> nodoActual = peliculasConMedia.getCabeza();
+        while (nodoActual != null && contador < 10) {
+            Pelicula pelicula = nodoActual.getDato();
+            String titulo = pelicula.getTitulo();
+            if (titulo.length() > 40) {
+                titulo = titulo.substring(0, 37) + "...";
+            }
+            System.out.printf("%-6d %-40s %,14d %15.2f%n",
+                    pelicula.getId(),
+                    titulo,
+                    contarReviews(reviewsPorPelicula.get(pelicula.getId())),
+                    pelicula.getCalificacion_media());
+            nodoActual = nodoActual.getSiguiente();
+            contador++;
+        }
     }
+
+    // Metodo para ordenar una ListaEnlazada por calificación media descendente
+    private void ordenarListaPorMediaDescendente(ListaEnlazada<Pelicula> lista) {
+        if (lista == null || lista.estaVacia()) return;
+
+        boolean intercambiado;
+        do {
+            intercambiado = false;
+            ListaEnlazada.Nodo<Pelicula> anterior = null;
+            ListaEnlazada.Nodo<Pelicula> actual = lista.getCabeza();
+            ListaEnlazada.Nodo<Pelicula> siguiente = actual != null ? actual.getSiguiente() : null;
+
+            while (siguiente != null) {
+                float califActual = actual.getDato().getCalificacion_media();
+                float califSiguiente = siguiente.getDato().getCalificacion_media();
+
+                if (califActual < califSiguiente) {
+                    // Intercambiar nodos
+                    actual.setSiguiente(siguiente.getSiguiente());
+                    siguiente.setSiguiente(actual);
+
+                    if (anterior == null) {
+                        lista.setCabeza(siguiente);
+                    } else {
+                        anterior.setSiguiente(siguiente);
+                    }
+
+                    // Actualizar referencias
+                    ListaEnlazada.Nodo<Pelicula> temp = actual;
+                    actual = siguiente;
+                    siguiente = temp;
+                    intercambiado = true;
+                }
+
+                // Avanzar al siguiente nodo
+                anterior = actual;
+                actual = siguiente;
+                if (actual != null) {
+                    siguiente = actual.getSiguiente();
+                }
+            }
+        } while (intercambiado);
+    }
+
 
     @Override
     public void Top_5_de_las_colecciones_que_más_ingresos_generaron() {

@@ -1,5 +1,3 @@
-import interfaces.UMovieMgt;
-
 import java.util.Scanner;
 
 public class Main {
@@ -27,11 +25,8 @@ public class Main {
                         int ratingsCargados = cargador.cargarRatings("resources/ratings_1mm.csv");
                         int creditosCargados = cargador.cargarCreditos("resources/credits.csv");
 
-                        long fin = System.currentTimeMillis();
-                        long duracion = fin - inicio;
-
                         if (peliculasCargadas > 0 && ratingsCargados > 0 && creditosCargados > 0) {
-                            System.out.println("Carga de datos exitosa,tiempo de carga: " + duracion + " ms");
+                            contarTiempoCarga(inicio,"Carga de datos exitosa,tiempo de carga: ");
                             cargaExitosa = true;
                         } else {
                             System.err.println("❌ Carga fallida.");
@@ -81,10 +76,14 @@ public class Main {
 
             switch (opcionConsulta) {
                 case "1":
+                    long inicio = System.currentTimeMillis();
                     umovie.Top_5_de_las_películas_que_más_calificaciones_por_idioma();
+                    contarTiempoCarga(inicio,"Tiempo de ejecución de la consulta:");
                     break;
                 case "2":
+                    inicio = System.currentTimeMillis();
                     umovie.Top_10_de_las_películas_que_mejor_calificación_media_tienen_por_parte_de_los_usuarios();
+                    contarTiempoCarga(inicio,"Tiempo de ejecución de la consulta:");
                     break;
                 case "3":
                     umovie.Top_5_de_las_colecciones_que_más_ingresos_generaron();
@@ -106,5 +105,13 @@ public class Main {
                     break;
             }
         }
+    }
+
+    private static void contarTiempoCarga(long tiempoInicial, String mensaje){
+        long tiempoFinal = System.currentTimeMillis();
+
+        long tiempoCarga = tiempoFinal - tiempoInicial;
+        System.out.println("-------------------------------------------------------------------------");
+        System.out.println(mensaje + tiempoCarga + "ms");
     }
 }

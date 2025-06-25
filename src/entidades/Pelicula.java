@@ -80,6 +80,9 @@ public class Pelicula {
     }
 
     public ListaEnlazada<Review> getReview() {
+        if (review == null) {
+            review = new ListaEnlazada<>();
+        }
         return review;
     }
 

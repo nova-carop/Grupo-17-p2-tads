@@ -104,11 +104,4 @@ public class TablaHash<K, V> {
         return lista;
     }
 
-
-
-
-
-
-
-
 }
