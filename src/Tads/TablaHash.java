@@ -94,15 +94,16 @@ public class TablaHash<K, V> {
         this.capacidad = nuevaCapacidad;
     }
 
-    public List<K> claves() {
-        List<K> lista = new ArrayList<>();
+    public ListaEnlazada<K> claves() {
+        ListaEnlazada<K> lista = new ListaEnlazada<>();
         for (List<Nodo<K, V>> bucket : tabla) {
             for (Nodo<K, V> nodo : bucket) {
-                lista.add(nodo.clave);
+                lista.insertar(nodo.clave);
             }
         }
         return lista;
     }
+
 
 
 

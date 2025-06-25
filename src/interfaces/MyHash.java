@@ -1,12 +1,13 @@
 package interfaces;
 
+import Tads.ListaEnlazada;
 
-
-public interface MyHash<K, T> {
-    void insertar(K clave, T valor);
-    T obtener(K clave);
-    boolean contieneClave(K clave);
-    void eliminar(K clave);
-    int tamanio();
+public interface MyHash<K, V> {
+    void put(K clave, V valor);
+    V get(K clave);
+    boolean containsKey(K clave);
+    boolean isEmpty();
+    int size();
+    ListaEnlazada<K> claves();
+    ListaEnlazada<V> values();
 }
-
