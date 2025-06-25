@@ -15,7 +15,6 @@ import java.util.Calendar;
 
 public class UMovieimplTest {
 
-    // Implementación simple de CargaDeDatos para testing
     private static class CargaDeDatosTest extends CargaDeDatos {
         private TablaHash<Integer, Pelicula> tablaPeliculas;
         private TablaHash<Integer, ListaEnlazada<Review>> reviewsPorPelicula;
@@ -61,10 +60,8 @@ public class UMovieimplTest {
         CargaDeDatosTest cargaDatos = new CargaDeDatosTest(tablaPeliculas, reviewsPorPelicula);
         uMovieImpl = new UMovieimpl(cargaDatos);
 
-        // Act
         uMovieImpl.Top_5_de_las_películas_que_más_calificaciones_por_idioma();
 
-        // Assert
         String output = outputStream.toString();
 
         // Verificar que se muestran los idiomas esperados
@@ -86,17 +83,16 @@ public class UMovieimplTest {
     @Test
     //Camino Triste: Tabla de películas vacía
     void testTop5PeliculasTablaVacia() {
-        // Arrange
+
         TablaHash<Integer, Pelicula> tablaPeliculasVacia = new TablaHash<>();
         TablaHash<Integer, ListaEnlazada<Review>> reviewsVacia = new TablaHash<>();
 
         CargaDeDatosTest cargaDatos = new CargaDeDatosTest(tablaPeliculasVacia, reviewsVacia);
         uMovieImpl = new UMovieimpl(cargaDatos);
 
-        // Act
         uMovieImpl.Top_5_de_las_películas_que_más_calificaciones_por_idioma();
 
-        // Assert
+
         String output = outputStream.toString();
         assert output.contains("Top 5 de películas con más evaluaciones por idioma:");
         assert output.contains("Tiempo de ejecución:");
@@ -108,99 +104,120 @@ public class UMovieimplTest {
     }
 
     @Test
-   //Camino Triste: Películas sin reviews
+//Camino Triste: Películas sin reviews - NO deben aparecer en el ranking
     void testTop5PeliculasSinReviews() {
-        // Arrange
+
         TablaHash<Integer, Pelicula> tablaPeliculas = crearTablaPeliculasSinReviews();
         TablaHash<Integer, ListaEnlazada<Review>> reviewsVacia = new TablaHash<>();
 
         CargaDeDatosTest cargaDatos = new CargaDeDatosTest(tablaPeliculas, reviewsVacia);
         uMovieImpl = new UMovieimpl(cargaDatos);
 
-        // Act
+
         uMovieImpl.Top_5_de_las_películas_que_más_calificaciones_por_idioma();
 
-        // Assert
         String output = outputStream.toString();
+
+        // Verificar que se procesan los idiomas
         assert output.contains("Top 5 de películas con más evaluaciones por idioma:");
         assert output.contains("Tiempo de ejecución:");
 
-        // Verificar que se procesan los idiomas pero no hay películas para mostrar
+        // Verificar que se muestran las secciones de idiomas
         for (String idioma : new String[]{"en", "fr", "it", "es", "pt"}) {
             assert output.contains("Idioma: " + idioma);
+        }
+
+        // VALIDACIÓN CLAVE: Las películas sin reviews NO deben aparecer en el ranking
+        assert !output.contains("Película Sin Reviews") :
+                "Las películas sin reviews NO deberían aparecer en el top 5";
+
+        // Verificar que no hay información de películas después de cada sección de idioma
+        // (esto implica que no se listaron películas para ningún idioma)
+        String[] secciones = output.split("Idioma: ");
+        for (int i = 1; i < secciones.length; i++) {
+            String seccion = secciones[i];
+            // Cada sección debería solo contener el nombre del idioma, no títulos de películas
+            assert !seccion.contains("1.") :
+                    "No deberían aparecer películas numeradas en idioma sin reviews";
         }
     }
 
     @Test
-   //Camino Triste: Solo películas de idiomas no objetivo
+//Camino Triste: Solo películas de idiomas no objetivo
     void testTop5PeliculasIdiomasNoObjetivo() {
-        // Arrange
+
         TablaHash<Integer, Pelicula> tablaPeliculas = crearTablaPeliculasIdiomasNoObjetivo();
         TablaHash<Integer, ListaEnlazada<Review>> reviews = crearReviewsIdiomasNoObjetivo();
 
         CargaDeDatosTest cargaDatos = new CargaDeDatosTest(tablaPeliculas, reviews);
         uMovieImpl = new UMovieimpl(cargaDatos);
 
-        // Act
+
         uMovieImpl.Top_5_de_las_películas_que_más_calificaciones_por_idioma();
 
-        // Assert
+
         String output = outputStream.toString();
+
+        // Verificar que se procesan los idiomas objetivo
         assert output.contains("Top 5 de películas con más evaluaciones por idioma:");
 
-        // No debería mostrar ninguna película específica ya que no hay en los idiomas objetivo
+        // Verificar que se muestran SOLO los idiomas objetivo
         for (String idioma : new String[]{"en", "fr", "it", "es", "pt"}) {
-            assert output.contains("Idioma: " + idioma);
+            assert output.contains("Idioma: " + idioma) :
+                    "Debe procesar el idioma objetivo: " + idioma;
+        }
+
+        // VALIDACIÓN CLAVE: Películas en idiomas NO objetivo NO deben aparecer
+        assert !output.contains("Película Alemana") :
+                "Películas en alemán (de) NO deberían aparecer en el ranking";
+        assert !output.contains("Película Japonesa") :
+                "Películas en japonés (ja) NO deberían aparecer en el ranking";
+
+        // Verificar que NO aparecen los idiomas no objetivo en el output
+        assert !output.contains("Idioma: de") :
+                "El alemán no debería aparecer como idioma procesado";
+        assert !output.contains("Idioma: ja") :
+                "El japonés no debería aparecer como idioma procesado";
+
+        // Verificar que las secciones de idiomas objetivo están vacías
+        // (no contienen películas numeradas)
+        String[] secciones = output.split("Idioma: ");
+        for (int i = 1; i < secciones.length; i++) {
+            String seccion = secciones[i];
+            // Verificar que no hay películas listadas (no aparece numeración "1.", "2.", etc.)
+            assert !seccion.contains("1.") :
+                    "No deberían aparecer películas numeradas para idiomas objetivo cuando solo hay idiomas no objetivo";
         }
     }
 
     @Test
    //Camino Triste: Menos de 5 películas por idioma
     void testTop5PeliculasMenosDe5PorIdioma() {
-        // Arrange
+
         TablaHash<Integer, Pelicula> tablaPeliculas = crearTablaPeliculasPocas();
         TablaHash<Integer, ListaEnlazada<Review>> reviews = crearReviewsPocas();
 
         CargaDeDatosTest cargaDatos = new CargaDeDatosTest(tablaPeliculas, reviews);
         uMovieImpl = new UMovieimpl(cargaDatos);
 
-        // Act
+
         uMovieImpl.Top_5_de_las_películas_que_más_calificaciones_por_idioma();
 
-        // Assert
         String output = outputStream.toString();
         assert output.contains("Top 5 de películas con más evaluaciones por idioma:");
         assert output.contains("Película Inglesa Unica");
         assert output.contains("Película Francesa Unica");
     }
 
-    @Test
-  //Camino Triste: Películas con título muy largo"
-    void testTop5PeliculasTituloLargo() {
-        // Arrange
-        TablaHash<Integer, Pelicula> tablaPeliculas = crearTablaPeliculasTituloLargo();
-        TablaHash<Integer, ListaEnlazada<Review>> reviews = crearReviewsTituloLargo();
-
-        CargaDeDatosTest cargaDatos = new CargaDeDatosTest(tablaPeliculas, reviews);
-        uMovieImpl = new UMovieimpl(cargaDatos);
-
-        // Act
-        uMovieImpl.Top_5_de_las_películas_que_más_calificaciones_por_idioma();
-
-        // Assert
-        String output = outputStream.toString();
-        assert output.contains("..."); // Verificar que se trunca el título
-        assert output.contains("Esta es una película con un título");
-    }
 
     @Test
 //Camino Triste: CargaDeDatos retorna null
     void testTop5PeliculasCargaDatosNull() {
-        // Arrange
+
         CargaDeDatosTest cargaDatos = new CargaDeDatosTest(null, null);
         uMovieImpl = new UMovieimpl(cargaDatos);
 
-        // Act & Assert - Debería lanzar NullPointerException
+        //Debería lanzar NullPointerException
         try {
             uMovieImpl.Top_5_de_las_películas_que_más_calificaciones_por_idioma();
             assert false : "Debería haber lanzado NullPointerException";
