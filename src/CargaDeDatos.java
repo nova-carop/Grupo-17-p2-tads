@@ -71,7 +71,7 @@ public class CargaDeDatos {
     private boolean procesarLineaPelicula(String linea) {
         String[] campos = parsearLineaCSV(linea);
 
-        if (campos == null || campos.length < 15) {
+        if (campos == null || campos.length < 14) {
             return false;
         }
 
@@ -83,7 +83,7 @@ public class CargaDeDatos {
         String titulo = ValidadorDatos.estaVacio(campos[8]) ? "Desconocido" : campos[8].replace("\"", "").trim();
         String idioma = ValidadorDatos.estaVacio(campos[7]) ? "en" : campos[7].replace("\"", "").trim();
         Date fecha = ValidadorDatos.validarFecha(campos[12].replace("\"", ""));
-        Integer revenue = ValidadorDatos.validarEntero(campos[14]);
+        Integer revenue = ValidadorDatos.validarEntero(campos[13].replace("\"", "").trim());
         if (revenue == null) revenue = 0;
 
         // Crear película con ingresos
