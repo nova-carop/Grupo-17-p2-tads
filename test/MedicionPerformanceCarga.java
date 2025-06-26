@@ -1,12 +1,12 @@
 public class MedicionPerformanceCarga {
 
     public static void main(String[] args) {
-        // Rutas de tus archivos
+
         String rutaPeliculas = "resources/movies_metadata.csv";
         String rutaRatings = "resources/ratings_1mm.csv";
         String rutaCreditos = "resources/credits.csv";
 
-        int numeroEjecuciones = 5; // Número de veces que ejecutarás la carga
+        int numeroEjecuciones = 5;
 
         medirCargaCompleta(rutaPeliculas, rutaRatings, rutaCreditos, numeroEjecuciones);
 
