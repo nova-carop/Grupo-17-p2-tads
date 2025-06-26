@@ -8,7 +8,6 @@ import entidades.Saga;
 import interfaces.UMovieMgt;
 
 import java.util.Calendar;
-import java.util.List;
 
 public class UMovieimpl implements UMovieMgt {
     private CargaDeDatos cargaDeDatos;
@@ -20,8 +19,6 @@ public class UMovieimpl implements UMovieMgt {
     @Override
 
     public void Top_5_de_las_películas_que_más_calificaciones_por_idioma() {
-        long startTime = System.currentTimeMillis();
-
         // Idiomas objetivo
         String[] idiomasObjetivo = {"en", "fr", "it", "es", "pt"};
 
@@ -77,10 +74,6 @@ public class UMovieimpl implements UMovieMgt {
                 actual = actual.getSiguiente();
             }
         }
-
-        long endTime = System.currentTimeMillis();
-        System.out.println("\n-------------------------------------------------------------------------");
-        System.out.println("Tiempo de ejecución: " + (endTime - startTime) + " ms");
     }
 
     // Metodo auxiliar para contar reviews de una película
@@ -148,7 +141,7 @@ public class UMovieimpl implements UMovieMgt {
         TablaHash<Integer, Pelicula> tablaPeliculas = cargaDeDatos.getTablaPeliculas();
         TablaHash<Integer, ListaEnlazada<Review>> reviewsPorPelicula = cargaDeDatos.getReviewsPorPelicula();
 
-        // ✅ Validaciones iniciales
+        //Validaciones
         if (tablaPeliculas == null || reviewsPorPelicula == null) {
             System.out.println("Error: No se cargaron las tablas de películas o reseñas.");
             return;
@@ -233,7 +226,9 @@ public class UMovieimpl implements UMovieMgt {
 
     // Metodo para ordenar una ListaEnlazada por calificación media descendente
     private void ordenarListaPorMediaDescendente(ListaEnlazada<Pelicula> lista) {
-        if (lista == null || lista.estaVacia()) return;
+        if (lista == null || lista.estaVacia()) {
+            return;
+        }
 
         boolean intercambiado;
         do {
@@ -256,14 +251,12 @@ public class UMovieimpl implements UMovieMgt {
                     } else {
                         anterior.setSiguiente(siguiente);
                     }
-
                     // Actualizar referencias
                     ListaEnlazada.Nodo<Pelicula> temp = actual;
                     actual = siguiente;
                     siguiente = temp;
                     intercambiado = true;
                 }
-
                 // Avanzar al siguiente nodo
                 anterior = actual;
                 actual = siguiente;
@@ -353,8 +346,6 @@ public class UMovieimpl implements UMovieMgt {
         long fin = System.currentTimeMillis();
         System.out.println("Tiempo de ejecución de la consulta: " + (fin - inicio) + " ms");
     }
-
-
 
 
     @Override
@@ -449,10 +440,6 @@ public class UMovieimpl implements UMovieMgt {
         System.out.println("---------------------------------------------------------------");
         System.out.println("Tiempo de ejecución: " + (endTime - startTime) + " ms");
     }
-
-
-
-
 
 
     @Override
