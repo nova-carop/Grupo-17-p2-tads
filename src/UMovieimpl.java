@@ -1,15 +1,10 @@
 import Tads.MyHeapImpl;
-import entidades.Actor;
-import entidades.Pelicula;
-import entidades.Review;
+import entidades.*;
 import Tads.ListaEnlazada;
 import Tads.TablaHash;
-import entidades.Saga;
 import interfaces.UMovieMgt;
 
-import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Date;
 
 public class UMovieimpl implements UMovieMgt {
     private CargaDeDatos cargaDeDatos;
@@ -98,8 +93,7 @@ public class UMovieimpl implements UMovieMgt {
     }
 
     // Método para ordenar películas por cantidad de reviews (descendente)
-    private void ordenarPeliculasPorReviews(ListaEnlazada<Pelicula> peliculas,
-                                            TablaHash<Integer, ListaEnlazada<Review>> reviewsPorPelicula) {
+    private void ordenarPeliculasPorReviews(ListaEnlazada<Pelicula> peliculas, TablaHash<Integer, ListaEnlazada<Review>> reviewsPorPelicula) {
         if (peliculas.estaVacia() || peliculas.tamanio() == 1) {
             return;
         }
@@ -144,7 +138,6 @@ public class UMovieimpl implements UMovieMgt {
             }
         } while (intercambiado);
     }
-
 
     @Override
     public void Top_10_de_las_películas_que_mejor_calificación_media_tienen_por_parte_de_los_usuarios() {
@@ -339,16 +332,114 @@ public class UMovieimpl implements UMovieMgt {
         System.out.println("Tiempo de ejecución de la consulta: " + (fin - inicio) + " ms");
     }
 
-
-
-
     @Override
     public void Top_10_de_los_directores_que_mejor_calificación_tienen() {
-        System.out.println("<nombre_director>,<cantidad_peliculas>,<mediana_calificacion>");
-        System.out.println("Tiempo de ejecución de la consulta: <tiempo_ejecucion>");
+        long inicio = System.currentTimeMillis();
 
+        TablaHash<String, Director> tablaDirectores = cargaDeDatos.getDirectores();
+        TablaHash<Integer, ListaEnlazada<Review>> reviewsPorPelicula = cargaDeDatos.getReviewsPorPelicula();
+
+        if (tablaDirectores == null || tablaDirectores.isEmpty()) {
+            System.err.println("Error: La tabla de directores está vacía o no fue cargada.");
+            return;
+        }
+
+        if (reviewsPorPelicula == null || reviewsPorPelicula.isEmpty()) {
+            System.err.println("Error: La tabla de reviews por película está vacía o no fue cargada.");
+            return;
+        }
+
+        ListaEnlazada<String> claves = tablaDirectores.claves();
+        ListaEnlazada<Director> directoresValidos = new ListaEnlazada<>();
+
+        for (int i = 0; i < claves.tamanio(); i++) {
+            String nombreDirector = claves.obtener(i);
+            Director director = tablaDirectores.get(nombreDirector);
+
+            if (director.getCantidad_pelis() <= 1) continue;
+
+            int totalEvaluaciones = 0;
+            ListaEnlazada<Double> calificacionesTotales = new ListaEnlazada<>();
+
+            for (int j = 0; j < director.getPeliculasDirigidas().tamanio(); j++) {
+                Pelicula pelicula = director.getPeliculasDirigidas().obtener(j);
+                ListaEnlazada<Review> reviews = reviewsPorPelicula.get(pelicula.getId());
+
+                if (reviews == null || reviews.estaVacia()) continue;
+
+                for (int k = 0; k < reviews.tamanio(); k++) {
+                    Review review = (Review) reviews.obtener(k);
+                    calificacionesTotales.insertar((double) review.getCalificacion());
+                    totalEvaluaciones++;
+                }
+            }
+
+            if (totalEvaluaciones > 100) {
+                double mediana = calcularMediana(calificacionesTotales);
+                director.setMediana_calificacion((float) mediana);
+                directoresValidos.insertar(director);
+            }
+        }
+
+        ordenarDirectoresPorMediana(directoresValidos);
+
+        System.out.println("\nTop 10 de los directores que mejor calificación tienen:");
+        System.out.println("<nombre_director>,<cantidad_peliculas>,<mediana_calificacion>");
+
+        int contador = 0;
+        for (int i = 0; i < directoresValidos.tamanio() && contador < 10; i++) {
+            Director director = directoresValidos.obtener(i);
+            System.out.printf("%s,%d,%.2f%n",
+                    director.getNombre(),
+                    director.getCantidad_pelis(),
+                    director.getMediana_calificacion());
+            contador++;
+        }
+
+        long fin = System.currentTimeMillis();
+        System.out.println("Tiempo de ejecución de la consulta: " + (fin - inicio) + " ms");
     }
 
+    private void ordenarDirectoresPorMediana(ListaEnlazada<Director> directores) {
+        for (int i = 0; i < directores.tamanio() - 1; i++) {
+            for (int j = i + 1; j < directores.tamanio(); j++) {
+                float m1 = directores.obtener(i).getMediana_calificacion();
+                float m2 = directores.obtener(j).getMediana_calificacion();
+                if (m1 < m2) {
+                    directores.intercambiar(i, j);
+                }
+            }
+        }
+    }
+
+    private void ordenarLista(ListaEnlazada<Double> lista) {
+        for (int i = 0; i < lista.tamanio(); i++) {
+            for (int j = i + 1; j < lista.tamanio(); j++) {
+                Double valI = lista.obtener(i);
+                Double valJ = lista.obtener(j);
+                if (valI > valJ) {
+                    lista.intercambiar(i, j);
+                }
+            }
+        }
+    }
+
+    private double calcularMediana(ListaEnlazada<Double> valores) {
+        if (valores.estaVacia()) return 0;
+
+        ListaEnlazada<Double> copia = new ListaEnlazada<>();
+        for (int i = 0; i < valores.tamanio(); i++) {
+            copia.insertar(valores.obtener(i));
+        }
+        ordenarLista(copia);
+
+        int n = copia.tamanio();
+        if (n % 2 == 1) {
+            return copia.obtener(n / 2);
+        } else {
+            return (copia.obtener((n / 2) - 1) + copia.obtener(n / 2)) / 2;
+        }
+    }
 
     @Override
     public void Actor_con_más_calificaciones_recibidas_en_cada_mes_del_año() {
@@ -434,11 +525,6 @@ public class UMovieimpl implements UMovieMgt {
         System.out.println("---------------------------------------------------------------");
         System.out.println("Tiempo de ejecución: " + (endTime - startTime) + " ms");
     }
-
-
-
-
-
 
     @Override
     public void Usuarios_con_más_calificaciones_por_género() {

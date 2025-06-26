@@ -1,6 +1,7 @@
 package entidades;
 
 import Tads.ListaEnlazada;
+import interfaces.MyList;
 
 
 public class Director {
@@ -48,6 +49,4 @@ public class Director {
         this.peliculas = peliculas;
     }
 
-    public Director() {
-    }
 }

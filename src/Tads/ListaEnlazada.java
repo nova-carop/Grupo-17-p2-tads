@@ -8,6 +8,7 @@ public class ListaEnlazada<T> implements MyList<T> {
     private Nodo<T> cola;
     private int tamanio;
 
+
     public static class Nodo<T> {
         private T dato;
         private Nodo<T> siguiente;
@@ -27,6 +28,10 @@ public class ListaEnlazada<T> implements MyList<T> {
 
         public void setSiguiente(Nodo<T> siguiente) {
             this.siguiente = siguiente;
+        }
+
+        public void setDato(T dato) {
+            this.dato = dato;
         }
     }
 
@@ -110,6 +115,40 @@ public class ListaEnlazada<T> implements MyList<T> {
         return false;
     }
 
+    public T get(int posicion) {
+        if (posicion < 0 || posicion >= tamanio()) {
+            throw new IndexOutOfBoundsException("Índice fuera de rango: " + posicion);
+        }
 
+        Nodo<T> actual = cabeza;
+        for (int i = 0; i < posicion; i++) {
+            actual = actual.getSiguiente();
+        }
 
+        return actual.getDato();
+    }
+
+    public void intercambiar(int i, int j) {
+        if (i < 0 || i >= tamanio || j < 0 || j >= tamanio) {
+            throw new IndexOutOfBoundsException("Índices fuera de rango");
+        }
+
+        if (i == j) return;
+
+        Nodo<T> nodoI = null;
+        Nodo<T> nodoJ = null;
+        Nodo<T> actual = cabeza;
+
+        for (int k = 0; k < tamanio; k++) {
+            if (k == i) nodoI = actual;
+            if (k == j) nodoJ = actual;
+            if (nodoI != null && nodoJ != null) break;
+            actual = actual.getSiguiente();
+        }
+
+        // Intercambiar datos, no referencias
+        T temp = nodoI.getDato();
+        nodoI.setDato(nodoJ.getDato());
+        nodoJ.setDato(temp);
+    }
 }
