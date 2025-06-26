@@ -89,6 +89,12 @@ public class CargaDeDatos {
         // Crear película con ingresos
         Pelicula pelicula = new Pelicula(id, titulo, idioma, 0.0f, fecha);
         pelicula.setIngreso(revenue);
+
+        if (!ValidadorDatos.estaVacio(campos[2])) {
+            ListaEnlazada<String> generos = extraerGeneros(campos[2]);
+            pelicula.setGeneros(generos);
+        }
+
         tablaPeliculas.put(id, pelicula);
 
         // Si tiene saga, la procesamos y le sumamos el ingreso a la saga
@@ -335,7 +341,23 @@ public class CargaDeDatos {
         }
     }
 
-
+    private ListaEnlazada<String> extraerGeneros(String campoGenero) {
+        ListaEnlazada<String> lista = new ListaEnlazada<>();
+        try {
+            JsonNode array = new ObjectMapper().readTree(campoGenero);
+            for (JsonNode genero : array) {
+                if (genero.has("name")) {
+                    String nombre = genero.get("name").asText().trim();
+                    if (!nombre.isEmpty()) {
+                        lista.insertar(nombre);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error al parsear géneros: " + e.getMessage());
+        }
+        return lista;
+    }
 
     public TablaHash<Integer, Pelicula> getTablaPeliculas() {
         return tablaPeliculas;

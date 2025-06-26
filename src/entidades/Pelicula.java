@@ -14,10 +14,8 @@ public class Pelicula {
     private ListaEnlazada<Actor> actores;
     private ListaEnlazada<Review> review;
     private int ingreso;
+    private ListaEnlazada<String> generos;
 
-    public Pelicula() {
-
-    }
 
     public int getId() {
         return id;
@@ -94,6 +92,14 @@ public class Pelicula {
         this.review = review;
     }
 
+    public ListaEnlazada<String> getGeneros() {
+        return generos;
+    }
+
+    public void setGeneros(ListaEnlazada<String> generos) {
+        this.generos = generos;
+    }
+
     public Pelicula(int id, String titulo, String idioma_original, float calificacion_media, Date fecha_publicacion) {
         this.id = id;
         this.titulo = titulo;
@@ -102,7 +108,7 @@ public class Pelicula {
         this.fecha_publicacion = fecha_publicacion;
     }
 
-    public Pelicula(int id, String titulo, String idioma_original, float calificacion_media, Date fecha_publicacion, int id_saga, ListaEnlazada<Actor> actores, ListaEnlazada<Review> review) {
+    public Pelicula(int id, String titulo, String idioma_original, float calificacion_media, Date fecha_publicacion, int id_saga, ListaEnlazada<Actor> actores, ListaEnlazada<Review> review, ListaEnlazada<String> generos) {
         this.id = id;
         this.titulo = titulo;
         this.idioma_original = idioma_original;
@@ -111,5 +117,6 @@ public class Pelicula {
         this.id_saga = id_saga;
         this.actores = actores;
         this.review = review;
+        this.generos = generos;
     }
 }

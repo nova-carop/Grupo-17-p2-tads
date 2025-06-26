@@ -512,8 +512,127 @@ public class UMovieimpl implements UMovieMgt {
 
     @Override
     public void Usuarios_con_más_calificaciones_por_género() {
-        System.out.println("<id_usuario>,<genero>,<cantidad_de_calificaciones_sobre_ese_genero>");
-        System.out.println("Tiempo de ejecución de la consulta: <tiempo_ejecucion>");
+        // Acceder a tablas necesarias
+        TablaHash<Integer, Pelicula> tablaPeliculas = cargaDeDatos.getTablaPeliculas();
+        TablaHash<Integer, ListaEnlazada<Review>> reviewsPorPelicula = cargaDeDatos.getReviewsPorPelicula();
 
+        // Paso 1: Contar cuántas veces aparece cada género en todas las reviews
+        TablaHash<String, Integer> conteoGeneros = new TablaHash<>();
+        TablaHash<String, TablaHash<Integer, Integer>> usuarioCalificacionesPorGenero = new TablaHash<>();
+
+        // Recorrer todas las películas
+        ListaEnlazada<Integer> idsPeliculas = reviewsPorPelicula.claves();
+        for (int i = 0; i < idsPeliculas.tamanio(); i++) {
+            int idPelicula = idsPeliculas.obtener(i);
+            Pelicula pelicula = tablaPeliculas.get(idPelicula);
+            if (pelicula == null || pelicula.getGeneros() == null || pelicula.getGeneros().estaVacia()) {
+                continue;
+            }
+
+            ListaEnlazada<Review> reviews = reviewsPorPelicula.get(idPelicula);
+            if (reviews == null || reviews.estaVacia()) {
+                continue;
+            }
+
+            for (int j = 0; j < pelicula.getGeneros().tamanio(); j++) {
+                String genero = pelicula.getGeneros().obtener(j);
+
+                // Incrementar el conteo global de géneros
+                int actual = 0;
+                if (conteoGeneros.containsKey(genero)) {
+                    actual = conteoGeneros.get(genero);
+                }
+                actual += reviews.tamanio();
+                conteoGeneros.put(genero, actual);
+
+                // Contar calificaciones por usuario y género
+                if (!usuarioCalificacionesPorGenero.containsKey(genero)) {
+                    usuarioCalificacionesPorGenero.put(genero, new TablaHash<>());
+                }
+                TablaHash<Integer, Integer> usuariosPorGenero = usuarioCalificacionesPorGenero.get(genero);
+
+                for (int k = 0; k < reviews.tamanio(); k++) {
+                    Review review = reviews.obtener(k);
+                    int userId = review.getId_usuario();
+                    int count = 0;
+                    if (usuariosPorGenero.containsKey(userId)) {
+                        count = usuariosPorGenero.get(userId);
+                    }
+                    count++;
+                    usuariosPorGenero.put(userId, count);
+                }
+            }
+        }
+
+        // Paso 2: Obtener los 10 géneros más populares
+        ListaEnlazada<String> top10Generos = obtenerTop10Generos(conteoGeneros);
+
+        // Paso 3: Para cada género, encontrar al usuario con más calificaciones
+        System.out.println("\nUsuarios con más calificaciones por género:");
+        System.out.printf("%-10s %-20s %s%n", "ID Usuario", "Género", "Cant. Calificaciones");
+        System.out.println("------------------------------------------------");
+
+        for (int i = 0; i < top10Generos.tamanio(); i++) {
+            String genero = top10Generos.obtener(i);
+            TablaHash<Integer, Integer> usuariosPorGenero = usuarioCalificacionesPorGenero.get(genero);
+            if (usuariosPorGenero == null || usuariosPorGenero.isEmpty()) {
+                continue;
+            }
+
+            int maxEvaluaciones = 0;
+            int idUsuarioMax = -1;
+
+            ListaEnlazada<Integer> claves = usuariosPorGenero.claves();
+            for (int j = 0; j < claves.tamanio(); j++) {
+                int userId = claves.obtener(j);
+                int count = usuariosPorGenero.get(userId);
+                if (count > maxEvaluaciones) {
+                    maxEvaluaciones = count;
+                    idUsuarioMax = userId;
+                }
+            }
+
+            if (idUsuarioMax != -1) {
+                System.out.printf("%-10d %-20s %d%n", idUsuarioMax, genero, maxEvaluaciones);
+            }
+        }
+    }
+
+    private ListaEnlazada<String> obtenerTop10Generos(TablaHash<String, Integer> conteoGeneros) {
+        ListaEnlazada<String> listaGeneros = new ListaEnlazada<>();
+
+        ListaEnlazada<String> claves = conteoGeneros.claves();
+        for (int i = 0; i < claves.tamanio(); i++) {
+            String genero = claves.obtener(i);
+            listaGeneros.insertar(genero);
+        }
+
+        // Ordenar descendente por cantidad de calificaciones
+        ordenarListaDescendente(listaGeneros, conteoGeneros);
+
+        // Tomar los primeros 10
+        ListaEnlazada<String> top10 = new ListaEnlazada<>();
+        for (int i = 0; i < Math.min(10, listaGeneros.tamanio()); i++) {
+            top10.insertar(listaGeneros.obtener(i));
+        }
+
+        return top10;
+    }
+
+    // Método para ordenar una lista de Strings descendentemente según su valor en conteoGeneros
+    private void ordenarListaDescendente(ListaEnlazada<String> lista, TablaHash<String, Integer> conteo) {
+        boolean intercambiado;
+        do {
+            intercambiado = false;
+            for (int i = 0; i < lista.tamanio() - 1; i++) {
+                String actual = lista.obtener(i);
+                String siguiente = lista.obtener(i + 1);
+
+                if (conteo.get(actual) < conteo.get(siguiente)) {
+                    lista.intercambiar(i, i + 1);
+                    intercambiado = true;
+                }
+            }
+        } while (intercambiado);
     }
 }

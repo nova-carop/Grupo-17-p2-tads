@@ -119,7 +119,7 @@ public class Main {
         long tiempoFinal = System.currentTimeMillis();
 
         long tiempoCarga = tiempoFinal - tiempoInicial;
-        System.out.println("-------------------------------------------------------------------------");
+        System.out.println("----------------------------------------------------");
         System.out.println(mensaje + tiempoCarga + "ms");
     }
 }
