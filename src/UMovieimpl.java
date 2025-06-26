@@ -619,7 +619,7 @@ public class UMovieimpl implements UMovieMgt {
         return top10;
     }
 
-    // Método para ordenar una lista de Strings descendentemente según su valor en conteoGeneros
+    // Metodo para ordenar una lista de Strings descendentemente según su valor en conteoGeneros
     private void ordenarListaDescendente(ListaEnlazada<String> lista, TablaHash<String, Integer> conteo) {
         boolean intercambiado;
         do {
