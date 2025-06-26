@@ -188,6 +188,104 @@ public class UMovieimplTest {
         }
     }
 
+    // ============ TESTS PARA TOP 10 PELÍCULAS CON MEJOR CALIFIACION MEDIA ============
+    @Test
+    //Camino feliz
+    void testTop10PeliculasConMasDe100ReviewsF() {
+        // Crear una tabla hash de películas con reseñas válidas
+        TablaHash<Integer, Pelicula> tablaPeliculas = new TablaHash<>();
+        TablaHash<Integer, ListaEnlazada<Review>> reviewsPorPelicula = new TablaHash<>();
+
+        // Película 1: Tiene 150 reseñas con calificación promedio 4.7
+        Pelicula pelicula1 = new Pelicula(1, "The Godfather", "en", 0.0f, new Date());
+        ListaEnlazada<Review> reviews1 = new ListaEnlazada<>();
+        for (int i = 0; i < 150; i++) {
+            reviews1.insertar(new Review(i + 1, 1, 1, 4.7f));
+        }
+        tablaPeliculas.put(1, pelicula1);
+        reviewsPorPelicula.put(1, reviews1);
+
+        // Película 2: Tiene 200 reseñas con calificación promedio 4.8
+        Pelicula pelicula2 = new Pelicula(2, "Pulp Fiction", "en", 0.0f, new Date());
+        ListaEnlazada<Review> reviews2 = new ListaEnlazada<>();
+        for (int i = 0; i < 200; i++) {
+            reviews2.insertar(new Review(i + 151, 2, 2, 4.8f));
+        }
+        tablaPeliculas.put(2, pelicula2);
+        reviewsPorPelicula.put(2, reviews2);
+
+        // Película 3: Tiene 120 reseñas con calificación promedio 4.6
+        Pelicula pelicula3 = new Pelicula(3, "Inception", "en", 0.0f, new Date());
+        ListaEnlazada<Review> reviews3 = new ListaEnlazada<>();
+        for (int i = 0; i < 120; i++) {
+            reviews3.insertar(new Review(i + 351, 3, 3, 4.6f));
+        }
+        tablaPeliculas.put(3, pelicula3);
+        reviewsPorPelicula.put(3, reviews3);
+
+        // Configurar CargaDeDatos con datos simulados
+        CargaDeDatosTest cargaDatos = new CargaDeDatosTest(tablaPeliculas, reviewsPorPelicula);
+        uMovieImpl = new UMovieimpl(cargaDatos);
+
+        // Ejecutar la funcionalidad
+        uMovieImpl.Top_10_de_las_películas_que_mejor_calificación_media_tienen_por_parte_de_los_usuarios();
+
+        // Capturar la salida
+        String output = outputStream.toString();
+
+        // Validar resultados
+        assert output.contains("1,The Godfather,4.70");
+        assert output.contains("2,Pulp Fiction,4.80");
+        assert output.contains("3,Inception,4.60");
+        assert output.contains("Tiempo de ejecución:");
+    }
+
+    //Camino Triste
+    @Test
+    void testTop10PeliculasConMenosDe100ReviewsT() {
+        // Crear una tabla hash de películas con reseñas insuficientes
+        TablaHash<Integer, Pelicula> tablaPeliculas = new TablaHash<>();
+        TablaHash<Integer, ListaEnlazada<Review>> reviewsPorPelicula = new TablaHash<>();
+
+        // Película 1: Tiene 99 reseñas (menos de 100)
+        Pelicula pelicula1 = new Pelicula(1, "El Padrino", "es", 0.0f, new Date());
+        ListaEnlazada<Review> reviews1 = new ListaEnlazada<>();
+        for (int i = 0; i < 99; i++) {
+            reviews1.insertar(new Review(i + 1, 1, 1, 4.7f));
+        }
+        tablaPeliculas.put(1, pelicula1);
+        reviewsPorPelicula.put(1, reviews1);
+
+        // Película 2: No tiene reseñas
+        Pelicula pelicula2 = new Pelicula(2, "Pulp Fiction", "es", 0.0f, new Date());
+        tablaPeliculas.put(2, pelicula2);
+
+        // Película 3: Tiene 101 reseñas (cumple el filtro)
+        Pelicula pelicula3 = new Pelicula(3, "Inception", "es", 0.0f, new Date());
+        ListaEnlazada<Review> reviews3 = new ListaEnlazada<>();
+        for (int i = 0; i < 101; i++) {
+            reviews3.insertar(new Review(i + 200, 3, 3, 4.6f));
+        }
+        tablaPeliculas.put(3, pelicula3);
+        reviewsPorPelicula.put(3, reviews3);
+
+        // Configurar CargaDeDatos con datos simulados
+        CargaDeDatosTest cargaDatos = new CargaDeDatosTest(tablaPeliculas, reviewsPorPelicula);
+        uMovieImpl = new UMovieimpl(cargaDatos);
+
+        // Ejecutar la funcionalidad
+        uMovieImpl.Top_10_de_las_películas_que_mejor_calificación_media_tienen_por_parte_de_los_usuarios();
+
+        // Capturar la salida
+        String output = outputStream.toString();
+
+        // Validar resultados
+        assert !output.contains("1,El Padrino"); // Debe excluir películas con menos de 100 reseñas
+        assert !output.contains("2,Pulp Fiction"); // Debe excluir películas sin reseñas
+        assert output.contains("3,Inception,4.60"); // Debe incluir películas con más de 100 reseñas
+        assert output.contains("Tiempo de ejecución:");
+    }
+
     // ============ TESTS PARA TOP 5 COLECCIONES ============
 
     @Test
@@ -310,6 +408,77 @@ public class UMovieimplTest {
             assert true;
         }
     }
+
+    // ============================ TESTS PARA TOP 10 DIRECTORES ============================
+
+    @Test
+        // Camino Feliz: director con más de 100 reviews y varias películas
+    void testTop10Directores_CaminoFeliz() {
+        TablaHash<String, Director> tablaDirectores = new TablaHash<>();
+        TablaHash<Integer, ListaEnlazada<Review>> reviewsPorPelicula = new TablaHash<>();
+
+        // Crear películas y reviews para un director
+        Director director = new Director("Christopher Nolan");
+        ListaEnlazada<Pelicula> peliculas = new ListaEnlazada<>();
+
+        for (int i = 0; i < 3; i++) {
+            int id = i + 1;
+            Pelicula pelicula = new Pelicula(id, "Pelicula " + id, "en", 0.0f, new Date());
+            peliculas.insertar(pelicula);
+
+            ListaEnlazada<Review> reviews = new ListaEnlazada<>();
+            for (int j = 0; j < 50; j++) {
+                reviews.insertar(new Review(j + id * 100, 1, id, 4.5f));
+            }
+            reviewsPorPelicula.put(id, reviews);
+        }
+        director.setPeliculasDirigidas(peliculas);
+        tablaDirectores.put("Christopher Nolan", director);
+
+        CargaDeDatosTest cargaDatos = new CargaDeDatosTest(new TablaHash<>(), reviewsPorPelicula);
+        cargaDatos.setDirectores(tablaDirectores);
+        uMovieImpl = new UMovieimpl(cargaDatos);
+
+        uMovieImpl.Top_10_de_los_directores_que_mejor_calificación_tienen();
+
+        String output = outputStream.toString();
+
+        assert output.contains("Top 10 de los directores que mejor calificación tienen:");
+        assert output.contains("Christopher Nolan");
+    }
+
+    @Test
+        // Camino Triste: director con solo una película o menos de 100 reviews
+    void testTop10Directores_CaminoTriste() {
+        TablaHash<String, Director> tablaDirectores = new TablaHash<>();
+        TablaHash<Integer, ListaEnlazada<Review>> reviewsPorPelicula = new TablaHash<>();
+
+        // Director con una sola película y pocas reviews
+        Director director = new Director("Director Solitario");
+        ListaEnlazada<Pelicula> peliculas = new ListaEnlazada<>();
+        Pelicula pelicula = new Pelicula(1, "Pelicula Unica", "en", 0.0f, new Date());
+        peliculas.insertar(pelicula);
+        director.setPeliculasDirigidas(peliculas);
+        tablaDirectores.put("Director Solitario", director);
+
+        ListaEnlazada<Review> reviews = new ListaEnlazada<>();
+        for (int i = 0; i < 10; i++) {
+            reviews.insertar(new Review(i + 1, 1, 1, 3.0f));
+        }
+        reviewsPorPelicula.put(1, reviews);
+
+        CargaDeDatosTest cargaDatos = new CargaDeDatosTest(new TablaHash<>(), reviewsPorPelicula);
+        cargaDatos.setDirectores(tablaDirectores);
+        uMovieImpl = new UMovieimpl(cargaDatos);
+
+        uMovieImpl.Top_10_de_los_directores_que_mejor_calificación_tienen();
+
+        String output = outputStream.toString();
+
+        assert output.contains("Top 10 de los directores que mejor calificación tienen:");
+        assert !output.contains("Director Solitario");
+    }
+}
 
     // ============ TESTS PARA ACTOR CON MÁS CALIFICACIONES POR MES ============
 
